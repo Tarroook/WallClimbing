@@ -76,8 +76,8 @@ public class WallClimbSystems {
 
         @Override
         public void onEntityAdd(@NonNullDecl Holder<EntityStore> holder, @NonNullDecl AddReason addReason, @NonNullDecl Store<EntityStore> store) {
-            WallClimbComponent wallClimbComponent = store.ensureAndGetComponent(wallClimbComponentType)
-            wallClimbComponent.addedToStore(holder);
+            WallClimbComponent wallClimbComponent = holder.ensureAndGetComponent(this.wallClimbComponentType);
+            //wallClimbComponent.addedToStore(holder);
             PacketAdapters.registerInbound(wallClimbComponent);
         }
 

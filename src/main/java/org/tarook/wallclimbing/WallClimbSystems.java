@@ -59,7 +59,6 @@ public class WallClimbSystems {
 
         @Override
         public void onEntityRemoved(@NonNullDecl Holder<EntityStore> holder, @NonNullDecl RemoveReason removeReason, @NonNullDecl Store<EntityStore> store) {
-            holder.getComponent(this.wallClimbComponentType).removedFromStore();
         }
 
         @Nonnull
@@ -92,7 +91,7 @@ public class WallClimbSystems {
         @Nonnull
         @Override
         public Query<EntityStore> getQuery() {
-            return Query.and(Player.getComponentType());
+            return Query.and(Player.getComponentType(), wallClimbComponentType);
         }
     }
 
@@ -117,8 +116,7 @@ public class WallClimbSystems {
                     EntityStatMap.getComponentType(),
                     HeadRotation.getComponentType(),
                     TransformComponent.getComponentType(),
-                    Velocity.getComponentType(),
-                    BoundingBox.getComponentType()
+                    Velocity.getComponentType()
             );
         }
 
@@ -316,8 +314,12 @@ public class WallClimbSystems {
 
                     if(packet instanceof ClientMovement movementPacket){
                         Position wishMovement = movementPacket.wishMovement;
+                        if(wishMovement == null){
+                            WallClimbPlugin.getHytaleLogger().atInfo().log("Client wishMovement Packet is null");
+                            return;
+                        }
                         //wallClimbComponent.setInputDirection(movementPacket.wishMovement);
-                        WallClimbPlugin.getHytaleLogger().atInfo().log("Client wishMovement Packet " + movementPacket.getId() + ": (" + wishMovement.x + ", " + wishMovement.y + ", " + wishMovement.z + ")");
+                        WallClimbPlugin.getHytaleLogger().atInfo().log("Client wishMovement Packet: (" + wishMovement.x + ", " + wishMovement.y + ", " + wishMovement.z + ")");
                         //WallClimbPlugin.getHytaleLogger().atInfo().log("Updated input direction to: " + wallClimbComponent.getInputDirection());
                     }
                 });

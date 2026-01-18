@@ -3,10 +3,6 @@ package org.tarook.wallclimbing;
 import com.hypixel.hytale.common.plugin.PluginManifest;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.logger.HytaleLogger;
-import com.hypixel.hytale.protocol.Packet;
-import com.hypixel.hytale.protocol.packets.player.ClientMovement;
-import com.hypixel.hytale.server.core.io.PacketHandler;
-import com.hypixel.hytale.server.core.io.adapter.PacketAdapters;
 import com.hypixel.hytale.server.core.modules.entity.EntityModule;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatsModule;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
@@ -46,7 +42,6 @@ public class WallClimbPlugin extends JavaPlugin {
     protected void setup() {
         LOGGER.atInfo().log("Setting up plugin " + this.getName());
 
-        // Register the wall climb component
         this.wallClimbComponentType = this.getEntityStoreRegistry()
                 .registerComponent(WallClimbComponent.class, WallClimbComponent::new);
 
@@ -56,9 +51,10 @@ public class WallClimbPlugin extends JavaPlugin {
 
     @Override
     protected void start() {
-        // Register the wall climb systems
         this.getEntityStoreRegistry().registerSystem(
-                new WallClimbSystems.EnsureWallClimbComponentSystem(this.wallClimbComponentType));
+                new WallClimbSystems.WallClimbHolderSystem(this.wallClimbComponentType));
+        this.getEntityStoreRegistry().registerSystem(
+                new WallClimbSystems.WallClimbRefSystem(this.wallClimbComponentType));
         this.getEntityStoreRegistry().registerSystem(
                 new WallClimbSystems.WallClimbTickSystem(this.wallClimbComponentType));
     }

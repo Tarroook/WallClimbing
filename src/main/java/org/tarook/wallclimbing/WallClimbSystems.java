@@ -10,10 +10,7 @@ import com.hypixel.hytale.component.system.RefSystem;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3i;
-import com.hypixel.hytale.protocol.BlockMaterial;
-import com.hypixel.hytale.protocol.ChangeVelocityType;
-import com.hypixel.hytale.protocol.MovementStates;
-import com.hypixel.hytale.protocol.Packet;
+import com.hypixel.hytale.protocol.*;
 import com.hypixel.hytale.protocol.packets.player.ClientMovement;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.entity.entities.Player;
@@ -22,6 +19,7 @@ import com.hypixel.hytale.server.core.entity.movement.MovementStatesSystems;
 import com.hypixel.hytale.server.core.io.PacketHandler;
 import com.hypixel.hytale.server.core.io.adapter.PacketAdapters;
 import com.hypixel.hytale.server.core.io.adapter.PacketWatcher;
+import com.hypixel.hytale.server.core.io.handlers.game.GamePacketHandler;
 import com.hypixel.hytale.server.core.modules.entity.component.BoundingBox;
 import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
@@ -31,6 +29,7 @@ import com.hypixel.hytale.server.core.modules.entitystats.EntityStatsModule;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.modules.physics.component.Velocity;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.TargetUtil;
@@ -39,51 +38,28 @@ import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
-/**
- * Systems for handling wall climbing mechanics.
- */
 public class WallClimbSystems {
 
     public WallClimbSystems() {
     }
 
-    /**
-     * System that ensures players have the WallClimbComponent attached.
-     */
-    public static class EnsureWallClimbComponentSystem extends HolderSystem<EntityStore> {
+    public static class WallClimbHolderSystem extends HolderSystem<EntityStore> {
         @Nonnull
         private final ComponentType<EntityStore, WallClimbComponent> wallClimbComponentType;
 
-        public EnsureWallClimbComponentSystem(
+        public WallClimbHolderSystem(
                 @Nonnull ComponentType<EntityStore, WallClimbComponent> wallClimbComponentType) {
             this.wallClimbComponentType = wallClimbComponentType;
         }
 
-        /*
-        @Override
-        public void onEntityAdded(@NonNullDecl Ref<EntityStore> ref, @NonNullDecl AddReason addReason, @NonNullDecl Store<EntityStore> store, @NonNullDecl CommandBuffer<EntityStore> commandBuffer) {
-            WallClimbComponent wallClimbComponent = store.ensureAndGetComponent(ref, this.wallClimbComponentType);
-            wallClimbComponent.addedToStore(ref);
-            PacketAdapters.registerInbound(wallClimbComponent);
-        }
-
-        @Override
-        public void onEntityRemove(@NonNullDecl Ref<EntityStore> ref, @NonNullDecl RemoveReason removeReason, @NonNullDecl Store<EntityStore> store, @NonNullDecl CommandBuffer<EntityStore> commandBuffer) {
-
-        }
-
-         */
-
         @Override
         public void onEntityAdd(@NonNullDecl Holder<EntityStore> holder, @NonNullDecl AddReason addReason, @NonNullDecl Store<EntityStore> store) {
             WallClimbComponent wallClimbComponent = holder.ensureAndGetComponent(this.wallClimbComponentType);
-            //wallClimbComponent.addedToStore(holder);
-            PacketAdapters.registerInbound(wallClimbComponent);
         }
 
         @Override
         public void onEntityRemoved(@NonNullDecl Holder<EntityStore> holder, @NonNullDecl RemoveReason removeReason, @NonNullDecl Store<EntityStore> store) {
-
+            holder.getComponent(this.wallClimbComponentType).removedFromStore();
         }
 
         @Nonnull
@@ -91,21 +67,44 @@ public class WallClimbSystems {
         public Query<EntityStore> getQuery() {
             return Query.and(Player.getComponentType());
         }
-
-
     }
 
-    /**
-     * System that handles the wall climbing logic each tick.
-     * Checks if the player can climb and applies climbing movement and stamina drain.
-     */
-    public static class WallClimbTickSystem extends EntityTickingSystem<EntityStore> {
+
+    public static class WallClimbRefSystem extends RefSystem<EntityStore> {
+        @Nonnull
+        private final ComponentType<EntityStore, WallClimbComponent> wallClimbComponentType;
+
+        public WallClimbRefSystem(
+                @Nonnull ComponentType<EntityStore, WallClimbComponent> wallClimbComponentType) {
+            this.wallClimbComponentType = wallClimbComponentType;
+        }
+
+        @Override
+        public void onEntityAdded(@NonNullDecl Ref<EntityStore> ref, @NonNullDecl AddReason addReason, @NonNullDecl Store<EntityStore> store, @NonNullDecl CommandBuffer<EntityStore> commandBuffer) {
+            WallClimbComponent wallClimbComponent = store.getComponent(ref, this.wallClimbComponentType);
+            wallClimbComponent.addedToStore(ref);
+        }
+
+        @Override
+        public void onEntityRemove(@NonNullDecl Ref<EntityStore> ref, @NonNullDecl RemoveReason removeReason, @NonNullDecl Store<EntityStore> store, @NonNullDecl CommandBuffer<EntityStore> commandBuffer) {
+        }
+
+        @Nonnull
+        @Override
+        public Query<EntityStore> getQuery() {
+            return Query.and(Player.getComponentType());
+        }
+    }
+
+
+    public static class WallClimbTickSystem extends EntityTickingSystem<EntityStore> implements PacketWatcher {
         @Nonnull
         private final ComponentType<EntityStore, WallClimbComponent> wallClimbComponentType;
 
         public WallClimbTickSystem(
                 @Nonnull ComponentType<EntityStore, WallClimbComponent> wallClimbComponentType) {
             this.wallClimbComponentType = wallClimbComponentType;
+            PacketAdapters.registerInbound(this);
         }
 
         @Nonnull
@@ -299,6 +298,30 @@ public class WallClimbSystems {
             // Typically ladders have the "climbable" tag or property
             String blockId = blockType.getId();
             return blockId != null && (blockId.contains("ladder") || blockId.contains("vine"));
+        }
+
+        @Override
+        public void accept(PacketHandler packetHandler, Packet packet) {
+            if (packetHandler instanceof GamePacketHandler gpHandler) {
+                if(gpHandler.getPlayerRef().getWorldUuid() == null) {
+                    return;
+                }
+                World world = Universe.get().getWorld(gpHandler.getPlayerRef().getWorldUuid());
+                world.execute(() -> {
+                    Store<EntityStore> store = gpHandler.getPlayerRef().getReference().getStore();
+                    Ref<EntityStore> ref = gpHandler.getPlayerRef().getReference();
+                    WallClimbComponent wallClimbComponent = store.getComponent(gpHandler.getPlayerRef().getReference(), this.wallClimbComponentType);
+
+                    WallClimbPlugin.getHytaleLogger().atInfo().log("Received Packet " + packet.getId());
+
+                    if(packet instanceof ClientMovement movementPacket){
+                        Position wishMovement = movementPacket.wishMovement;
+                        //wallClimbComponent.setInputDirection(movementPacket.wishMovement);
+                        WallClimbPlugin.getHytaleLogger().atInfo().log("Client wishMovement Packet " + movementPacket.getId() + ": (" + wishMovement.x + ", " + wishMovement.y + ", " + wishMovement.z + ")");
+                        //WallClimbPlugin.getHytaleLogger().atInfo().log("Updated input direction to: " + wallClimbComponent.getInputDirection());
+                    }
+                });
+            }
         }
     }
 }

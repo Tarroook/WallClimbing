@@ -3,11 +3,16 @@ package org.tarook.wallclimbing;
 import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.protocol.Packet;
+import com.hypixel.hytale.protocol.Position;
 import com.hypixel.hytale.protocol.packets.player.ClientMovement;
 import com.hypixel.hytale.server.core.io.PacketHandler;
 import com.hypixel.hytale.server.core.io.adapter.PacketWatcher;
 import com.hypixel.hytale.server.core.io.handlers.game.GamePacketHandler;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.Universe;
+import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import javax.annotation.Nonnull;
@@ -28,6 +33,7 @@ public class WallClimbComponent implements Component<EntityStore>, PacketWatcher
     private float staminaDrainRate = 10.0f;
     private float minimumStaminaToClimb = 1.0f;
     private float climbSpeed = 5.0f;
+    private Vector3d inputDirection = new Vector3d(0,0,0);
 
     @Nullable
     private Ref<EntityStore> entity;
@@ -91,6 +97,20 @@ public class WallClimbComponent implements Component<EntityStore>, PacketWatcher
         this.staminaDepleted = false;
     }
 
+    public void setInputDirection(Vector3d direction) {
+        this.inputDirection = direction;
+        this.inputDirection.normalize();
+    }
+
+    public void setInputDirection(Position position) {
+        this.inputDirection = new Vector3d(position.x, position.y, position.z);
+        this.inputDirection.normalize();
+    }
+
+    public Vector3d getInputDirection() {
+        return this.inputDirection;
+    }
+
     @Nonnull
     @Override
     public Component<EntityStore> clone() {
@@ -99,24 +119,32 @@ public class WallClimbComponent implements Component<EntityStore>, PacketWatcher
 
     @Override
     public void accept(PacketHandler packetHandler, Packet packet) {
-        WallClimbPlugin.getHytaleLogger().atInfo().log("Received Packet " + packet.getId());
-        /*
+        //WallClimbPlugin.getHytaleLogger().atInfo().log("Received Packet " + packet.getId());
         if (packetHandler instanceof GamePacketHandler gpHandler) {
             Ref<EntityStore> ref = getReference();
-            if(gpHandler.getPlayerRef().getReference().equals(ref.getStore().getComponent(ref, WallClimbComponent.getComponentType()))) {
-                WallClimbPlugin.getHytaleLogger().atInfo().log("Packet belongs to our player: " + packet.getId());
-                if(packet instanceof ClientMovement movementPacket){
-                    com.hypixel.hytale.protocol.Vector3d velocity = movementPacket.velocity;
-                    WallClimbPlugin.getHytaleLogger().atInfo().log("Client Velocity Packet " + movementPacket.getId() + ": (" + velocity.x + ", " + velocity.y + ", " + velocity.z + ")");
+            World world = Universe.get().getWorld(gpHandler.getPlayerRef().getWorldUuid());
+            world.execute(() -> {
+                WallClimbPlugin.getHytaleLogger().atInfo().log("Received Packet " + packet.getId() + "in component : " + this.getReference());
+                if(gpHandler.getPlayerRef().getReference().equals(ref.getStore().getComponent(ref, PlayerRef.getComponentType()))) {
+                    WallClimbPlugin.getHytaleLogger().atInfo().log("Packet belongs to our player: " + packet.getId());
+                    if(packet instanceof ClientMovement movementPacket){
+                        com.hypixel.hytale.protocol.Vector3d velocity = movementPacket.velocity;
+                        WallClimbPlugin.getHytaleLogger().atInfo().log("Client Velocity Packet " + movementPacket.getId() + ": (" + velocity.x + ", " + velocity.y + ", " + velocity.z + ")");
+                    }
                 }
-            }
+            });
         }
-         */
     }
 
     public void addedToStore(Ref<EntityStore> ref)
     {
         this.entity = ref;
+    }
+
+    public void removedFromStore()
+    {
+        this.entity.getStore().assertThread();
+        this.entity = null;
     }
 
     @Nullable

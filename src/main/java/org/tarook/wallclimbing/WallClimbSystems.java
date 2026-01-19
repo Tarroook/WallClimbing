@@ -20,7 +20,6 @@ import com.hypixel.hytale.server.core.io.PacketHandler;
 import com.hypixel.hytale.server.core.io.adapter.PacketAdapters;
 import com.hypixel.hytale.server.core.io.adapter.PacketWatcher;
 import com.hypixel.hytale.server.core.io.handlers.game.GamePacketHandler;
-import com.hypixel.hytale.server.core.modules.entity.component.BoundingBox;
 import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
@@ -36,6 +35,7 @@ import com.hypixel.hytale.server.core.util.TargetUtil;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 
 import java.util.Set;
+import java.util.UUID;
 import javax.annotation.Nonnull;
 
 public class WallClimbSystems {
@@ -301,25 +301,27 @@ public class WallClimbSystems {
         @Override
         public void accept(PacketHandler packetHandler, Packet packet) {
             if (packetHandler instanceof GamePacketHandler gpHandler) {
-                if(gpHandler.getPlayerRef().getWorldUuid() == null) {
+                UUID worldUuid = gpHandler.getPlayerRef().getWorldUuid();
+                if(worldUuid == null) {
                     return;
                 }
-                World world = Universe.get().getWorld(gpHandler.getPlayerRef().getWorldUuid());
+                World world = Universe.get().getWorld(worldUuid);
                 world.execute(() -> {
                     Store<EntityStore> store = gpHandler.getPlayerRef().getReference().getStore();
                     Ref<EntityStore> ref = gpHandler.getPlayerRef().getReference();
                     WallClimbComponent wallClimbComponent = store.getComponent(gpHandler.getPlayerRef().getReference(), this.wallClimbComponentType);
-
-                    WallClimbPlugin.getHytaleLogger().atInfo().log("Received Packet " + packet.getId());
+                    //WallClimbPlugin.getHytaleLogger().atInfo().log("Received Packet " + packet.getId());
 
                     if(packet instanceof ClientMovement movementPacket){
-                        Position wishMovement = movementPacket.wishMovement;
+                        HalfFloatPosition wishMovement = movementPacket.relativePosition;
                         if(wishMovement == null){
-                            WallClimbPlugin.getHytaleLogger().atInfo().log("Client wishMovement Packet is null");
-                            return;
+                            WallClimbPlugin.getHytaleLogger().atInfo().log("Player: " + gpHandler.getPlayerRef().getUsername() + " sent null wishMovement Packet");
+                        }
+                        else{
+                            WallClimbPlugin.getHytaleLogger().atInfo().log("Player: " + gpHandler.getPlayerRef().getUsername() + " sent wishMovement Packet: (" + wishMovement.x + ", " + wishMovement.y + ", " + wishMovement.z + ")");
                         }
                         //wallClimbComponent.setInputDirection(movementPacket.wishMovement);
-                        WallClimbPlugin.getHytaleLogger().atInfo().log("Client wishMovement Packet: (" + wishMovement.x + ", " + wishMovement.y + ", " + wishMovement.z + ")");
+                        //WallClimbPlugin.getHytaleLogger().atInfo().log("Client wishMovement Packet: (" + wishMovement.x + ", " + wishMovement.y + ", " + wishMovement.z + ")");
                         //WallClimbPlugin.getHytaleLogger().atInfo().log("Updated input direction to: " + wallClimbComponent.getInputDirection());
                     }
                 });

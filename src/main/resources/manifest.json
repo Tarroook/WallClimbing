@@ -18,5 +18,5 @@
     },
     "DisabledByDefault": false,
     "Main": "org.tarook.wallclimbing.WallClimbPlugin",
-    "IncludesAssetPack": true
+    "IncludesAssetPack": false
 }

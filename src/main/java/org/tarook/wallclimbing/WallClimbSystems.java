@@ -310,8 +310,7 @@ public class WallClimbSystems {
                     Store<EntityStore> store = gpHandler.getPlayerRef().getReference().getStore();
                     Ref<EntityStore> ref = gpHandler.getPlayerRef().getReference();
                     WallClimbComponent wallClimbComponent = store.getComponent(gpHandler.getPlayerRef().getReference(), this.wallClimbComponentType);
-                    //WallClimbPlugin.getHytaleLogger().atInfo().log("Received Packet " + packet.getId());
-
+                    /*
                     if(packet instanceof ClientMovement movementPacket){
                         HalfFloatPosition wishMovement = movementPacket.relativePosition;
                         if(wishMovement == null){
@@ -324,6 +323,7 @@ public class WallClimbSystems {
                         //WallClimbPlugin.getHytaleLogger().atInfo().log("Client wishMovement Packet: (" + wishMovement.x + ", " + wishMovement.y + ", " + wishMovement.z + ")");
                         //WallClimbPlugin.getHytaleLogger().atInfo().log("Updated input direction to: " + wallClimbComponent.getInputDirection());
                     }
+                    */
                 });
             }
         }

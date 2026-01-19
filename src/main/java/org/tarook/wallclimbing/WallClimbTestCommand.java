@@ -13,10 +13,6 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import javax.annotation.Nonnull;
 
-/**
- * Test command to verify the wall climbing system is properly set up.
- * Checks if the WallClimbComponent type is registered and provides system status.
- */
 public class WallClimbTestCommand extends CommandBase {
 
     public WallClimbTestCommand() {

@@ -45,7 +45,6 @@ public class WallClimbPlugin extends JavaPlugin {
         this.wallClimbComponentType = this.getEntityStoreRegistry()
                 .registerComponent(WallClimbComponent.class, WallClimbComponent::new);
 
-        this.getCommandRegistry().registerCommand(new ExampleCommand(this.getName(), this.getManifest().getVersion().toString()));
         this.getCommandRegistry().registerCommand(new WallClimbTestCommand());
     }
 

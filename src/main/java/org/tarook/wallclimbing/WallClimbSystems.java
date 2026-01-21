@@ -134,12 +134,7 @@ public class WallClimbSystems {
         }
 
         @Override
-        public void tick(
-                float dt,
-                int index,
-                @Nonnull ArchetypeChunk<EntityStore> archetypeChunk,
-                @Nonnull Store<EntityStore> store,
-                @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+        public void tick(float dt, int index, @Nonnull ArchetypeChunk<EntityStore> archetypeChunk, @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
 
             WallClimbComponent wallClimbComponent = archetypeChunk.getComponent(index, this.wallClimbComponentType);
             MovementStatesComponent movementStatesComponent = archetypeChunk.getComponent(index, MovementStatesComponent.getComponentType());
@@ -220,12 +215,7 @@ public class WallClimbSystems {
             entityStatMap.setStatValue(DefaultEntityStatTypes.getStamina(), newStamina);
         }
 
-        private boolean canPlayerClimb(
-                @Nonnull WallClimbComponent wallClimbComponent,
-                @Nonnull MovementStates movementStates,
-                float currentStamina,
-                @Nonnull PlayerRef playerRef,
-                @Nonnull Store<EntityStore> store) {
+        private boolean canPlayerClimb(@Nonnull WallClimbComponent wallClimbComponent, @Nonnull MovementStates movementStates, float currentStamina, @Nonnull PlayerRef playerRef, @Nonnull Store<EntityStore> store) {
 
             if (movementStates.onGround) {
                 return false;
@@ -290,9 +280,7 @@ public class WallClimbSystems {
          * Checks if the player is currently on a ladder.
          * This prevents interfering with normal ladder climbing.
          */
-        private boolean isOnLadder(
-                @Nonnull TransformComponent transformComponent,
-                @Nonnull Store<EntityStore> store) {
+        private boolean isOnLadder(@Nonnull TransformComponent transformComponent, @Nonnull Store<EntityStore> store) {
 
             World world = store.getExternalData().getWorld();
             Vector3d position = transformComponent.getPosition();

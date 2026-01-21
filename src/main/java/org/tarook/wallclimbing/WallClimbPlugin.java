@@ -11,15 +11,6 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import javax.annotation.Nonnull;
 
-/**
- * Plugin that allows players to climb any solid block when:
- * - They are colliding with the block
- * - They are facing the block
- * - They are holding the jump key (spacebar)
- *
- * Climbing drains stamina and requires stamina to initiate.
- * Once stamina runs out, climbing stops until the player touches ground.
- */
 public class WallClimbPlugin extends JavaPlugin {
     public static final PluginManifest MANIFEST = PluginManifest.corePlugin(WallClimbPlugin.class)
             .depends(EntityModule.class)

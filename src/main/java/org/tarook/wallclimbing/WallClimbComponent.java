@@ -10,16 +10,10 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/**
- * Component that tracks the wall climbing state for an entity.
- * Attached to players to enable wall climbing functionality.
- */
+
 @SuppressWarnings("unused") // Methods are used by WallClimbSystems
 public class WallClimbComponent implements Component<EntityStore> {
 
-    /**
-     * Whether the entity is currently wall climbing.
-     */
     private boolean isWallClimbing;
     private boolean staminaDepleted;
     private float staminaDrainRate = 10.0f;

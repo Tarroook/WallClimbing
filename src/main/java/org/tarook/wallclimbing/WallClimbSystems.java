@@ -22,6 +22,8 @@ import com.hypixel.hytale.server.core.io.adapter.PacketWatcher;
 import com.hypixel.hytale.server.core.io.handlers.game.GamePacketHandler;
 import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
+import com.hypixel.hytale.server.core.modules.entity.player.PlayerInput;
+import com.hypixel.hytale.server.core.modules.entity.player.PlayerSystems;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatsModule;
@@ -34,6 +36,7 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.TargetUtil;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nonnull;
@@ -47,14 +50,13 @@ public class WallClimbSystems {
         @Nonnull
         private final ComponentType<EntityStore, WallClimbComponent> wallClimbComponentType;
 
-        public WallClimbHolderSystem(
-                @Nonnull ComponentType<EntityStore, WallClimbComponent> wallClimbComponentType) {
+        public WallClimbHolderSystem(@Nonnull ComponentType<EntityStore, WallClimbComponent> wallClimbComponentType) {
             this.wallClimbComponentType = wallClimbComponentType;
         }
 
         @Override
         public void onEntityAdd(@NonNullDecl Holder<EntityStore> holder, @NonNullDecl AddReason addReason, @NonNullDecl Store<EntityStore> store) {
-            WallClimbComponent wallClimbComponent = holder.ensureAndGetComponent(this.wallClimbComponentType);
+            holder.ensureComponent(this.wallClimbComponentType);
         }
 
         @Override
@@ -116,7 +118,8 @@ public class WallClimbSystems {
                     EntityStatMap.getComponentType(),
                     HeadRotation.getComponentType(),
                     TransformComponent.getComponentType(),
-                    Velocity.getComponentType()
+                    Velocity.getComponentType(),
+                    PlayerInput.getComponentType()
             );
         }
 
@@ -125,7 +128,8 @@ public class WallClimbSystems {
         public Set<Dependency<EntityStore>> getDependencies() {
             return Set.of(
                     new SystemDependency<>(Order.BEFORE, MovementStatesSystems.TickingSystem.class),
-                    new SystemDependency<>(Order.BEFORE, EntityStatsModule.PlayerRegenerateStatsSystem.class)
+                    new SystemDependency<>(Order.BEFORE, EntityStatsModule.PlayerRegenerateStatsSystem.class),
+                    new SystemDependency<>(Order.BEFORE, PlayerSystems.ProcessPlayerInput.class)
             );
         }
 
@@ -149,6 +153,21 @@ public class WallClimbSystems {
             // Reset stamina depletion when player touches ground
             if (movementStates.onGround) {
                 wallClimbComponent.resetStaminaDepletion();
+            }
+
+            PlayerInput playerInputComponent = archetypeChunk.getComponent(index, PlayerInput.getComponentType());
+            List<PlayerInput.InputUpdate> queue = playerInputComponent.getMovementUpdateQueue();
+            for (PlayerInput.InputUpdate update : queue) {
+
+                WallClimbPlugin.getHytaleLogger().atInfo().log(update.toString());
+                if (update instanceof PlayerInput.WishMovement wish) {
+                    double inputX = wish.getX();  // Horizontal left/right
+                    double inputZ = wish.getZ();  // Horizontal forward/back
+                    double inputY = wish.getY();  // Vertical (jump/fly)
+
+                    //log
+                    WallClimbPlugin.getHytaleLogger().atInfo().log("Player Input - X: " + inputX + ", Y: " + inputY + ", Z: " + inputZ);
+                }
             }
 
             // Check current stamina
@@ -209,40 +228,36 @@ public class WallClimbSystems {
                 @Nonnull Store<EntityStore> store) {
 
             if (movementStates.onGround) {
-                //WallClimbPlugin.getHytaleLogger().atInfo().log("Cannot climb while on ground");
                 return false;
             }
 
             if (movementStates.mantling) {
-                //WallClimbPlugin.getHytaleLogger().atInfo().log("Cannot climb while mantling");
                 return false;
             }
 
-            // Cannot climb if stamina is depleted until touching ground
+            if(wallClimbComponent.isWallClimbing()){
+                if(currentStamina <= 0.0f) {
+                    return false;
+                }
+            }
+            else{
+                if (currentStamina < wallClimbComponent.getMinimumStaminaToClimb()) {
+                    return false;
+                }
+            }
+
             if (wallClimbComponent.isStaminaDepleted()) {
-                //WallClimbPlugin.getHytaleLogger().atInfo().log("Stamina depleted");
                 return false;
             }
 
-            // Must have minimum stamina to start/continue climbing
-            if (currentStamina < wallClimbComponent.getMinimumStaminaToClimb()) {
-                //WallClimbPlugin.getHytaleLogger().atInfo().log("Insufficient stamina: " + currentStamina);
-                return false;
-            }
-
-            // Cannot climb while in fluid or swimming
             if (movementStates.inFluid || movementStates.swimming) {
-                //WallClimbPlugin.getHytaleLogger().atInfo().log("Is in fluid or swimming");
                 return false;
             }
 
-            // Cannot climb while flying or gliding
             if (movementStates.flying || movementStates.gliding) {
-                //WallClimbPlugin.getHytaleLogger().atInfo().log("Is flying or gliding");
                 return false;
             }
 
-            // Check if there's a solid block in front of the player
             return isFacingSolidBlock(store, playerRef);
         }
 

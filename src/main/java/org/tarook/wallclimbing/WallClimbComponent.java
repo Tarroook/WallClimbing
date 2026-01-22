@@ -32,11 +32,13 @@ public class WallClimbComponent implements Component<EntityStore> {
     }
 
     public WallClimbComponent(@Nonnull WallClimbComponent other) {
-        this.isWallClimbing = other.isWallClimbing;
-        this.staminaDepleted = other.staminaDepleted;
-        this.staminaDrainRate = other.staminaDrainRate;
-        this.minimumStaminaToClimb = other.minimumStaminaToClimb;
-        this.climbSpeed = other.climbSpeed;
+        isWallClimbing = other.isWallClimbing;
+        staminaDepleted = other.staminaDepleted;
+        staminaDrainRate = other.staminaDrainRate;
+        minimumStaminaToClimb = other.minimumStaminaToClimb;
+        climbSpeed = other.climbSpeed;
+        inputDirection = new Vector3d(other.inputDirection);
+        entity = other.entity;
     }
 
     public boolean isWallClimbing() {
@@ -72,7 +74,7 @@ public class WallClimbComponent implements Component<EntityStore> {
     }
 
     public float getClimbSpeed() {
-        return this.climbSpeed;
+        return climbSpeed;
     }
 
     public void setClimbSpeed(float climbSpeed) {
@@ -80,17 +82,17 @@ public class WallClimbComponent implements Component<EntityStore> {
     }
 
     public void resetStaminaDepletion() {
-        this.staminaDepleted = false;
+        staminaDepleted = false;
     }
 
     public void setInputDirection(Vector3d direction) {
-        this.inputDirection = direction;
-        this.inputDirection.normalize();
+        inputDirection = direction;
+        inputDirection.normalize();
     }
 
     public void setInputDirection(Position position) {
-        this.inputDirection = new Vector3d(position.x, position.y, position.z);
-        this.inputDirection.normalize();
+        inputDirection = new Vector3d(position.x, position.y, position.z);
+        inputDirection.normalize();
     }
 
     public Vector3d getInputDirection() {
@@ -105,17 +107,17 @@ public class WallClimbComponent implements Component<EntityStore> {
 
     public void addedToStore(Ref<EntityStore> ref)
     {
-        this.entity = ref;
+        entity = ref;
     }
 
     public void removedFromStore()
     {
-        this.entity.getStore().assertThread();
-        this.entity = null;
+        entity.getStore().assertThread();
+        entity = null;
     }
 
     @Nullable
     public Ref<EntityStore> getReference() {
-        return this.entity != null && this.entity.isValid() ? this.entity : null;
+        return entity != null && entity.isValid() ? entity : null;
     }
 }

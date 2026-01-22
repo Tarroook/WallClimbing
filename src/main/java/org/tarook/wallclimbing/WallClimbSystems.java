@@ -11,7 +11,6 @@ import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.protocol.*;
-import com.hypixel.hytale.protocol.packets.player.ClientMovement;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.movement.MovementStatesComponent;
@@ -19,7 +18,6 @@ import com.hypixel.hytale.server.core.entity.movement.MovementStatesSystems;
 import com.hypixel.hytale.server.core.io.PacketHandler;
 import com.hypixel.hytale.server.core.io.adapter.PacketAdapters;
 import com.hypixel.hytale.server.core.io.adapter.PacketWatcher;
-import com.hypixel.hytale.server.core.io.handlers.game.GamePacketHandler;
 import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.modules.entity.player.PlayerInput;
@@ -30,15 +28,12 @@ import com.hypixel.hytale.server.core.modules.entitystats.EntityStatsModule;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.modules.physics.component.Velocity;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
-import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.TargetUtil;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 
-import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import javax.annotation.Nonnull;
 
 public class WallClimbSystems {
@@ -56,7 +51,7 @@ public class WallClimbSystems {
 
         @Override
         public void onEntityAdd(@NonNullDecl Holder<EntityStore> holder, @NonNullDecl AddReason addReason, @NonNullDecl Store<EntityStore> store) {
-            holder.ensureComponent(this.wallClimbComponentType);
+            holder.ensureComponent(wallClimbComponentType);
         }
 
         @Override
@@ -82,7 +77,7 @@ public class WallClimbSystems {
 
         @Override
         public void onEntityAdded(@NonNullDecl Ref<EntityStore> ref, @NonNullDecl AddReason addReason, @NonNullDecl Store<EntityStore> store, @NonNullDecl CommandBuffer<EntityStore> commandBuffer) {
-            WallClimbComponent wallClimbComponent = store.getComponent(ref, this.wallClimbComponentType);
+            WallClimbComponent wallClimbComponent = store.getComponent(ref, wallClimbComponentType);
             wallClimbComponent.addedToStore(ref);
         }
 
@@ -136,7 +131,7 @@ public class WallClimbSystems {
         @Override
         public void tick(float dt, int index, @Nonnull ArchetypeChunk<EntityStore> archetypeChunk, @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
 
-            WallClimbComponent wallClimbComponent = archetypeChunk.getComponent(index, this.wallClimbComponentType);
+            WallClimbComponent wallClimbComponent = archetypeChunk.getComponent(index, wallClimbComponentType);
             MovementStatesComponent movementStatesComponent = archetypeChunk.getComponent(index, MovementStatesComponent.getComponentType());
             EntityStatMap entityStatMap = archetypeChunk.getComponent(index, EntityStatMap.getComponentType());
             HeadRotation headRotation = archetypeChunk.getComponent(index, HeadRotation.getComponentType());
@@ -150,6 +145,7 @@ public class WallClimbSystems {
                 wallClimbComponent.resetStaminaDepletion();
             }
 
+            /*
             PlayerInput playerInputComponent = archetypeChunk.getComponent(index, PlayerInput.getComponentType());
             List<PlayerInput.InputUpdate> queue = playerInputComponent.getMovementUpdateQueue();
             for (PlayerInput.InputUpdate update : queue) {
@@ -163,6 +159,7 @@ public class WallClimbSystems {
                     WallClimbPlugin.getHytaleLogger().atInfo().log("Player Input - X: " + inputX + ", Y: " + inputY + ", Z: " + inputZ);
                 }
             }
+            */
 
             EntityStatValue staminaStat = entityStatMap.get(DefaultEntityStatTypes.getStamina());
             float currentStamina = staminaStat != null ? staminaStat.get() : 0.0f;
@@ -290,6 +287,7 @@ public class WallClimbSystems {
 
         @Override
         public void accept(PacketHandler packetHandler, Packet packet) {
+            /*
             if (packetHandler instanceof GamePacketHandler gpHandler) {
                 UUID worldUuid = gpHandler.getPlayerRef().getWorldUuid();
                 if(worldUuid == null) {
@@ -300,7 +298,6 @@ public class WallClimbSystems {
                     Store<EntityStore> store = gpHandler.getPlayerRef().getReference().getStore();
                     Ref<EntityStore> ref = gpHandler.getPlayerRef().getReference();
                     WallClimbComponent wallClimbComponent = store.getComponent(gpHandler.getPlayerRef().getReference(), this.wallClimbComponentType);
-                    /*
                     if(packet instanceof ClientMovement movementPacket){
                         HalfFloatPosition wishMovement = movementPacket.relativePosition;
                         if(wishMovement == null){
@@ -313,9 +310,9 @@ public class WallClimbSystems {
                         //WallClimbPlugin.getHytaleLogger().atInfo().log("Client wishMovement Packet: (" + wishMovement.x + ", " + wishMovement.y + ", " + wishMovement.z + ")");
                         //WallClimbPlugin.getHytaleLogger().atInfo().log("Updated input direction to: " + wallClimbComponent.getInputDirection());
                     }
-                    */
                 });
             }
+            */
         }
     }
 }

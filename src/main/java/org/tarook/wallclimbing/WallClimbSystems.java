@@ -160,12 +160,10 @@ public class WallClimbSystems {
                     double inputZ = wish.getZ();  // Horizontal forward/back
                     double inputY = wish.getY();  // Vertical (jump/fly)
 
-                    //log
                     WallClimbPlugin.getHytaleLogger().atInfo().log("Player Input - X: " + inputX + ", Y: " + inputY + ", Z: " + inputZ);
                 }
             }
 
-            // Check current stamina
             EntityStatValue staminaStat = entityStatMap.get(DefaultEntityStatTypes.getStamina());
             float currentStamina = staminaStat != null ? staminaStat.get() : 0.0f;
 
@@ -184,7 +182,6 @@ public class WallClimbSystems {
         }
 
         private static void startClimbing(WallClimbComponent wallClimbComponent, MovementStates movementStates) {
-            //WallClimbPlugin.getHytaleLogger().atInfo().log("Start Climbing Wall");
             wallClimbComponent.setWallClimbing(true);
             movementStates.climbing = true;
             movementStates.falling = false;
@@ -192,14 +189,11 @@ public class WallClimbSystems {
         }
 
         private static void stopClimbing(WallClimbComponent wallClimbComponent, MovementStates movementStates) {
-            //WallClimbPlugin.getHytaleLogger().atInfo().log("Stop Climbing Wall");
             wallClimbComponent.setWallClimbing(false);
             movementStates.climbing = false;
         }
 
         private static void climb(float dt, WallClimbComponent wallClimbComponent, MovementStates movementStates, Velocity velocityComponent, float currentStamina, EntityStatMap entityStatMap, HeadRotation headRotation) {
-            //WallClimbPlugin.getHytaleLogger().atInfo().log("Is Climbing Wall");
-
             Vector3d force = headRotation.getDirection().normalize().scale(wallClimbComponent.getClimbSpeed());
             velocityComponent.addInstruction(force, null, ChangeVelocityType.Set);
 
@@ -254,20 +248,17 @@ public class WallClimbSystems {
         private boolean isFacingSolidBlock(@Nonnull Store<EntityStore> store, @Nonnull PlayerRef playerRef) {
 
             World world = store.getExternalData().getWorld();
-            double checkDistance = 0.5; // Distance in front of player to check
+            double checkDistance = 0.5;
 
             Vector3i targetBlockPos = TargetUtil.getTargetBlock(playerRef.getReference(), checkDistance, playerRef.getReference().getStore());
             if(targetBlockPos != null)
             {
                 BlockType blockType = world.getBlockType(targetBlockPos);
                 if (blockType != null && isSolidClimbableBlock(blockType)) {
-                    //WallClimbPlugin.getHytaleLogger().atInfo().log("Facing solid block: " + blockType.getId() +
-                    //        " at (" + targetBlockPos.x + ", " + targetBlockPos.y + ", " + targetBlockPos.z + ")");
                     return true;
                 }
             }
 
-            //WallClimbPlugin.getHytaleLogger().atInfo().log("Not facing any solid climbable block");
             return false;
         }
 
@@ -276,10 +267,6 @@ public class WallClimbSystems {
             return blockType.getMaterial() == BlockMaterial.Solid;
         }
 
-        /**
-         * Checks if the player is currently on a ladder.
-         * This prevents interfering with normal ladder climbing.
-         */
         private boolean isOnLadder(@Nonnull TransformComponent transformComponent, @Nonnull Store<EntityStore> store) {
 
             World world = store.getExternalData().getWorld();

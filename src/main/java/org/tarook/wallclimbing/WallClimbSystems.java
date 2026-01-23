@@ -30,6 +30,7 @@ import com.hypixel.hytale.server.core.modules.physics.component.Velocity;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.hypixel.hytale.server.core.util.Config;
 import com.hypixel.hytale.server.core.util.TargetUtil;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 
@@ -94,12 +95,16 @@ public class WallClimbSystems {
 
 
     public static class WallClimbTickSystem extends EntityTickingSystem<EntityStore> implements PacketWatcher {
+
         @Nonnull
         private final ComponentType<EntityStore, WallClimbComponent> wallClimbComponentType;
 
-        public WallClimbTickSystem(
-                @Nonnull ComponentType<EntityStore, WallClimbComponent> wallClimbComponentType) {
+        @Nonnull
+        private final Config<WallClimbConfig> config;
+
+        public WallClimbTickSystem(@Nonnull ComponentType<EntityStore, WallClimbComponent> wallClimbComponentType, Config<WallClimbConfig> config) {
             this.wallClimbComponentType = wallClimbComponentType;
+            this.config = config;
             PacketAdapters.registerInbound(this);
         }
 
@@ -190,11 +195,12 @@ public class WallClimbSystems {
             movementStates.climbing = false;
         }
 
-        private static void climb(float dt, WallClimbComponent wallClimbComponent, MovementStates movementStates, Velocity velocityComponent, float currentStamina, EntityStatMap entityStatMap, HeadRotation headRotation) {
-            Vector3d force = headRotation.getDirection().normalize().scale(wallClimbComponent.getClimbSpeed());
+        private void climb(float dt, WallClimbComponent wallClimbComponent, MovementStates movementStates, Velocity velocityComponent, float currentStamina, EntityStatMap entityStatMap, HeadRotation headRotation) {
+            float speed = config.get().getBaseClimbSpeed() * wallClimbComponent.getClimbSpeedMultiplier();
+            Vector3d force = headRotation.getDirection().normalize().scale(speed);
             velocityComponent.addInstruction(force, null, ChangeVelocityType.Set);
 
-            float staminaToDrain = wallClimbComponent.getStaminaDrainRate() * dt;
+            float staminaToDrain = config.get().getBaseStaminaDrainRate() * wallClimbComponent.getStaminaDrainRateMultiplier() * dt;
             float newStamina = currentStamina - staminaToDrain;
 
             if (newStamina <= 0.0f) {
@@ -222,7 +228,7 @@ public class WallClimbSystems {
                 }
             }
             else{
-                if (currentStamina < wallClimbComponent.getMinimumStaminaToClimb()) {
+                if (currentStamina < config.get().getBaseMinimumStaminaToClimb()) {
                     return false;
                 }
             }

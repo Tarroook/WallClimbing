@@ -16,9 +16,8 @@ public class WallClimbComponent implements Component<EntityStore> {
 
     private boolean isWallClimbing;
     private boolean staminaDepleted;
-    private float staminaDrainRate = 10.0f;
-    private float minimumStaminaToClimb = 1.0f;
-    private float climbSpeed = 5.0f;
+    private float staminaDrainRateMultiplier = 1.0f;
+    private float climbSpeedMultiplier = 1.0f;
     private Vector3d inputDirection = new Vector3d(0,0,0);
 
     @Nullable
@@ -34,9 +33,8 @@ public class WallClimbComponent implements Component<EntityStore> {
     public WallClimbComponent(@Nonnull WallClimbComponent other) {
         isWallClimbing = other.isWallClimbing;
         staminaDepleted = other.staminaDepleted;
-        staminaDrainRate = other.staminaDrainRate;
-        minimumStaminaToClimb = other.minimumStaminaToClimb;
-        climbSpeed = other.climbSpeed;
+        staminaDrainRateMultiplier = other.staminaDrainRateMultiplier;
+        climbSpeedMultiplier = other.climbSpeedMultiplier;
         inputDirection = new Vector3d(other.inputDirection);
         entity = other.entity;
     }
@@ -57,28 +55,20 @@ public class WallClimbComponent implements Component<EntityStore> {
         this.staminaDepleted = staminaDepleted;
     }
 
-    public float getStaminaDrainRate() {
-        return this.staminaDrainRate;
+    public float getStaminaDrainRateMultiplier() {
+        return this.staminaDrainRateMultiplier;
     }
 
-    public void setStaminaDrainRate(float staminaDrainRate) {
-        this.staminaDrainRate = staminaDrainRate;
+    public void setStaminaDrainRateMultiplier(float staminaDrainRateMultiplier) {
+        this.staminaDrainRateMultiplier = staminaDrainRateMultiplier;
     }
 
-    public float getMinimumStaminaToClimb() {
-        return this.minimumStaminaToClimb;
+    public float getClimbSpeedMultiplier() {
+        return climbSpeedMultiplier;
     }
 
-    public void setMinimumStaminaToClimb(float minimumStaminaToClimb) {
-        this.minimumStaminaToClimb = minimumStaminaToClimb;
-    }
-
-    public float getClimbSpeed() {
-        return climbSpeed;
-    }
-
-    public void setClimbSpeed(float climbSpeed) {
-        this.climbSpeed = climbSpeed;
+    public void setClimbSpeedMultiplier(float climbSpeedMultiplier) {
+        this.climbSpeedMultiplier = climbSpeedMultiplier;
     }
 
     public void resetStaminaDepletion() {

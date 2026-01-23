@@ -6,6 +6,7 @@ import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.Config;
+import org.tarook.wallclimbing.commands.WallClimbCommand;
 
 import javax.annotation.Nonnull;
 
@@ -30,6 +31,8 @@ public class WallClimbPlugin extends JavaPlugin {
         LOGGER.atInfo().log("Setting up plugin " + getName());
 
         config.save();
+
+        getCommandRegistry().registerCommand(new WallClimbCommand(config));
 
         wallClimbComponentType = getEntityStoreRegistry()
                 .registerComponent(WallClimbComponent.class, WallClimbComponent::new);

@@ -36,4 +36,16 @@ public class WallClimbConfig {
     public float getBaseClimbSpeed() {
         return baseClimbSpeed;
     }
+
+    public void setBaseStaminaDrainRate(float baseStaminaDrainRate) {
+        this.baseStaminaDrainRate = baseStaminaDrainRate;
+    }
+
+    public void setBaseMinimumStaminaToClimb(float baseMinimumStaminaToClimb) {
+        this.baseMinimumStaminaToClimb = baseMinimumStaminaToClimb;
+    }
+
+    public void setBaseClimbSpeed(float baseClimbSpeed) {
+        this.baseClimbSpeed = baseClimbSpeed;
+    }
 }

@@ -3,7 +3,7 @@ package org.tarook.wallclimbing;
 import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.Ref;
-import com.hypixel.hytale.math.vector.Vector3d;
+import org.joml.Vector3d;
 import com.hypixel.hytale.protocol.Position;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
@@ -77,12 +77,10 @@ public class WallClimbComponent implements Component<EntityStore> {
 
     public void setInputDirection(Vector3d direction) {
         inputDirection = direction;
-        inputDirection.normalize();
     }
 
     public void setInputDirection(Position position) {
         inputDirection = new Vector3d(position.x, position.y, position.z);
-        inputDirection.normalize();
     }
 
     public Vector3d getInputDirection() {

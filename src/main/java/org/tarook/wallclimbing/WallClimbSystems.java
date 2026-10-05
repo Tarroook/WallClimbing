@@ -8,8 +8,8 @@ import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.HolderSystem;
 import com.hypixel.hytale.component.system.RefSystem;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
-import com.hypixel.hytale.math.vector.Vector3d;
-import com.hypixel.hytale.math.vector.Vector3i;
+import org.joml.Vector3d;
+import org.joml.Vector3i;
 import com.hypixel.hytale.protocol.*;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.entity.entities.Player;
@@ -150,7 +150,7 @@ public class WallClimbSystems {
                 wallClimbComponent.resetStaminaDepletion();
             }
 
-            /*
+/*
             PlayerInput playerInputComponent = archetypeChunk.getComponent(index, PlayerInput.getComponentType());
             List<PlayerInput.InputUpdate> queue = playerInputComponent.getMovementUpdateQueue();
             for (PlayerInput.InputUpdate update : queue) {
@@ -164,7 +164,7 @@ public class WallClimbSystems {
                     WallClimbPlugin.getHytaleLogger().atInfo().log("Player Input - X: " + inputX + ", Y: " + inputY + ", Z: " + inputZ);
                 }
             }
-            */
+*/
 
             EntityStatValue staminaStat = entityStatMap.get(DefaultEntityStatTypes.getStamina());
             float currentStamina = staminaStat != null ? staminaStat.get() : 0.0f;
@@ -197,7 +197,7 @@ public class WallClimbSystems {
 
         private void climb(float dt, WallClimbComponent wallClimbComponent, MovementStates movementStates, Velocity velocityComponent, float currentStamina, EntityStatMap entityStatMap, HeadRotation headRotation) {
             float speed = config.get().getBaseClimbSpeed() * wallClimbComponent.getClimbSpeedMultiplier();
-            Vector3d force = headRotation.getDirection().normalize().scale(speed);
+            Vector3d force = headRotation.getDirection().normalize().mul(speed);
             velocityComponent.addInstruction(force, null, ChangeVelocityType.Set);
 
             float staminaToDrain = config.get().getBaseStaminaDrainRate() * wallClimbComponent.getStaminaDrainRateMultiplier() * dt;
@@ -270,8 +270,8 @@ public class WallClimbSystems {
             return blockType.getMaterial() == BlockMaterial.Solid;
         }
 
-        private boolean isOnLadder(@Nonnull TransformComponent transformComponent, @Nonnull Store<EntityStore> store) {
-
+        private boolean isBlackListedBlock(BlockType blockType) {
+/*
             World world = store.getExternalData().getWorld();
             Vector3d position = transformComponent.getPosition();
 
@@ -284,10 +284,9 @@ public class WallClimbSystems {
             if (blockType == null) {
                 return false;
             }
+ */
 
-            // Check if this block type is a ladder or climbable by default
-            // Typically ladders have the "climbable" tag or property
-            String blockId = blockType.getId();
+            String blockId = blockType.getId().toLowerCase();
             return blockId != null && (blockId.contains("ladder") || blockId.contains("vine"));
         }
 

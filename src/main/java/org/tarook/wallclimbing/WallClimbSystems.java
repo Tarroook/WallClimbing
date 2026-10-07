@@ -35,7 +35,6 @@ import com.hypixel.hytale.server.core.util.Config;
 import com.hypixel.hytale.server.core.util.TargetUtil;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 
-import java.util.Arrays;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
@@ -249,11 +248,17 @@ public class WallClimbSystems {
                 return false;
             }
 
-            return isFacingSolidBlock(store, playerRef);
+            return isFacingClimbableBlock(store, playerRef);
         }
 
-        private boolean isFacingSolidBlock(@Nonnull Store<EntityStore> store, @Nonnull PlayerRef playerRef) {
+        private boolean isFacingClimbableBlock(@Nonnull Store<EntityStore> store, @Nonnull PlayerRef playerRef) {
+            BlockType blockType = getFacingBlockType(store, playerRef);
+                if (blockType != null && isSolidClimbableBlock(blockType))
+                    return true;
+            return false;
+        }
 
+        private BlockType getFacingBlockType(@Nonnull Store<EntityStore> store, @Nonnull PlayerRef playerRef) {
             World world = store.getExternalData().getWorld();
             double checkDistance = 0.5;
 
@@ -261,21 +266,19 @@ public class WallClimbSystems {
             if(targetBlockPos != null)
             {
                 BlockType blockType = world.getBlockType(targetBlockPos);
-                if (blockType != null && isSolidClimbableBlock(blockType)) {
-                    return true;
-                }
+                return blockType;
             }
 
-            return false;
+            return null;
         }
 
 
-        private boolean isSolidClimbableBlock(BlockType blockType) {
-            return blockType.getMaterial() == BlockMaterial.Solid;
+        private boolean isSolidClimbableBlock(@Nonnull BlockType blockType) {
+            return blockType.getMaterial() == BlockMaterial.Solid && !isBlackListedBlock(blockType);
         }
 
-        private boolean isBlackListedBlock(BlockType blockType) {
-            String blockId = blockType.getId().toLowerCase();
+        private boolean isBlackListedBlock(@Nonnull BlockType blockType) {
+            String blockId = blockType.getId();
             return config.get().getBlacklistedBlocks().contains(blockId);
         }
 

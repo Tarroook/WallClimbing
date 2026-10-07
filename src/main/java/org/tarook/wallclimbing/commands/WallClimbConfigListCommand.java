@@ -27,7 +27,9 @@ public class WallClimbConfigListCommand extends CommandBase {
                 .insert("\n")
                 .insert("BaseMinimumStaminaToClimb: " + cfg.getBaseMinimumStaminaToClimb())
                 .insert("\n")
-                .insert("BaseClimbSpeed: " + cfg.getBaseClimbSpeed());
+                .insert("BaseClimbSpeed: " + cfg.getBaseClimbSpeed())
+                .insert("\n")
+                .insert("blacklistedBlocks: " + cfg.getBlacklistedBlocks());
 
         context.sendMessage(message);
     }

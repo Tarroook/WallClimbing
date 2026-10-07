@@ -4,6 +4,9 @@ import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
 public class WallClimbConfig {
 
     public static final BuilderCodec<WallClimbConfig> CODEC = BuilderCodec.builder(WallClimbConfig.class, WallClimbConfig::new)
@@ -16,12 +19,15 @@ public class WallClimbConfig {
             .append(new KeyedCodec<Float>("BaseClimbSpeed", Codec.FLOAT),
                     (config, value) -> config.baseClimbSpeed = value,
                     (config) -> config.baseClimbSpeed).add()
+            .append(new KeyedCodec<String[]>("BlacklistedBlocks", Codec.STRING_ARRAY),
+                    (config, value) -> config.blacklistedBlocks = new HashSet<>(Arrays.asList(value)),
+                    (config) -> config.blacklistedBlocks.toArray(new String[0])).add()
             .build();
 
     private float baseStaminaDrainRate = 10.0f;
     private float baseMinimumStaminaToClimb = 1.0f;
     private float baseClimbSpeed = 5.0f;
-    private String[] blacklistedBlocks = new String[] {
+    private HashSet<String> blacklistedBlocks = new HashSet<>(Arrays.asList(
             "Furniture_Village_Ladder",
             "Furniture_Ancient_Ladder",
             "Furniture_Frozen_Ladder",
@@ -38,7 +44,7 @@ public class WallClimbConfig {
             "Furniture_Temple_Dark_Ladder",
             "Furniture_Kweebec_Ladder",
             "Furniture_Temple_Emerald_Ladder"
-    };
+    ));
 
     public WallClimbConfig() {
     }
@@ -55,9 +61,7 @@ public class WallClimbConfig {
         return baseClimbSpeed;
     }
 
-    public String[] getBlacklistedBlocks() {
-        return blacklistedBlocks;
-    }
+    public HashSet<String> getBlacklistedBlocks() { return blacklistedBlocks; }
 
     public void setBaseStaminaDrainRate(float baseStaminaDrainRate) {
         this.baseStaminaDrainRate = baseStaminaDrainRate;
@@ -72,25 +76,10 @@ public class WallClimbConfig {
     }
 
     public void addBlacklistedBlock(String blockName) {
-        String[] newBlacklistedBlocks = new String[blacklistedBlocks.length + 1];
-        System.arraycopy(blacklistedBlocks, 0, newBlacklistedBlocks, 0, blacklistedBlocks.length);
-        newBlacklistedBlocks[blacklistedBlocks.length] = blockName;
-        blacklistedBlocks = newBlacklistedBlocks;
+        blacklistedBlocks.add(blockName);
     }
 
     public void removeBlacklistedBlock(String blockName) {
-        int index = -1;
-        for (int i = 0; i < blacklistedBlocks.length; i++) {
-            if (blacklistedBlocks[i].equals(blockName)) {
-                index = i;
-                break;
-            }
-        }
-        if (index != -1) {
-            String[] newBlacklistedBlocks = new String[blacklistedBlocks.length - 1];
-            System.arraycopy(blacklistedBlocks, 0, newBlacklistedBlocks, 0, index);
-            System.arraycopy(blacklistedBlocks, index + 1, newBlacklistedBlocks, index, blacklistedBlocks.length - index - 1);
-            blacklistedBlocks = newBlacklistedBlocks;
-        }
+        blacklistedBlocks.remove(blockName);
     }
 }

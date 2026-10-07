@@ -8,6 +8,7 @@ import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.HolderSystem;
 import com.hypixel.hytale.component.system.RefSystem;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
+import com.hypixel.hytale.server.core.modules.entitystats.StatChangeDirection;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
 import com.hypixel.hytale.protocol.*;
@@ -34,6 +35,7 @@ import com.hypixel.hytale.server.core.util.Config;
 import com.hypixel.hytale.server.core.util.TargetUtil;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 
+import java.util.Arrays;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
@@ -165,51 +167,53 @@ public class WallClimbSystems {
                 }
             }
 */
-
-            EntityStatValue staminaStat = entityStatMap.get(DefaultEntityStatTypes.getStamina());
+            int staminaStatIndex = DefaultEntityStatTypes.getStamina();
+            EntityStatValue staminaStat = entityStatMap.get(staminaStatIndex);
             float currentStamina = staminaStat != null ? staminaStat.get() : 0.0f;
 
             boolean canClimb = canPlayerClimb(wallClimbComponent, movementStates, currentStamina, playerRef, store);
 
             if (canClimb && !wallClimbComponent.isWallClimbing()) {
-                startClimbing(wallClimbComponent, movementStates);
+                startClimbing(wallClimbComponent, movementStates, entityStatMap, staminaStatIndex);
             }
             else if (!canClimb && wallClimbComponent.isWallClimbing()) {
-                stopClimbing(wallClimbComponent, movementStates);
+                stopClimbing(wallClimbComponent, movementStates, entityStatMap, staminaStatIndex);
             }
             else if (wallClimbComponent.isWallClimbing())
             {
-                climb(dt, wallClimbComponent, movementStates, velocityComponent, currentStamina, entityStatMap, headRotation);
+                climb(dt, wallClimbComponent, movementStates, velocityComponent, entityStatMap, headRotation, staminaStatIndex);
             }
         }
 
-        private static void startClimbing(WallClimbComponent wallClimbComponent, MovementStates movementStates) {
+        private static void startClimbing(WallClimbComponent wallClimbComponent, MovementStates movementStates, EntityStatMap statMap, int staminaStatIndex) {
             wallClimbComponent.setWallClimbing(true);
             movementStates.climbing = true;
             movementStates.falling = false;
             movementStates.jumping = false;
+            statMap.setStatChangeSuppressed(staminaStatIndex, StatChangeDirection.RAISE, true);
         }
 
-        private static void stopClimbing(WallClimbComponent wallClimbComponent, MovementStates movementStates) {
+        private static void stopClimbing(WallClimbComponent wallClimbComponent, MovementStates movementStates, EntityStatMap statMap, int staminaStatIndex) {
             wallClimbComponent.setWallClimbing(false);
             movementStates.climbing = false;
+            statMap.setStatChangeSuppressed(staminaStatIndex, StatChangeDirection.RAISE, false);
         }
 
-        private void climb(float dt, WallClimbComponent wallClimbComponent, MovementStates movementStates, Velocity velocityComponent, float currentStamina, EntityStatMap entityStatMap, HeadRotation headRotation) {
+        private void climb(float dt, WallClimbComponent wallClimbComponent, MovementStates movementStates, Velocity velocityComponent, EntityStatMap entityStatMap, HeadRotation headRotation, int staminaStatIndex) {
             float speed = config.get().getBaseClimbSpeed() * wallClimbComponent.getClimbSpeedMultiplier();
             Vector3d force = headRotation.getDirection().normalize().mul(speed);
             velocityComponent.addInstruction(force, null, ChangeVelocityType.Set);
 
             float staminaToDrain = config.get().getBaseStaminaDrainRate() * wallClimbComponent.getStaminaDrainRateMultiplier() * dt;
-            float newStamina = currentStamina - staminaToDrain;
+            entityStatMap.addStatValue(staminaStatIndex, -staminaToDrain);
 
-            if (newStamina <= 0.0f) {
-                newStamina = 0.0f;
+            EntityStatValue staminaStat = entityStatMap.get(staminaStatIndex);
+            float currentStamina = staminaStat != null ? staminaStat.get() : 0.0f;
+
+            if (currentStamina <= 0.0f) {
                 wallClimbComponent.setStaminaDepleted(true);
-                stopClimbing(wallClimbComponent, movementStates);
+                stopClimbing(wallClimbComponent, movementStates, entityStatMap, staminaStatIndex);
             }
-
-            entityStatMap.setStatValue(DefaultEntityStatTypes.getStamina(), newStamina);
         }
 
         private boolean canPlayerClimb(@Nonnull WallClimbComponent wallClimbComponent, @Nonnull MovementStates movementStates, float currentStamina, @Nonnull PlayerRef playerRef, @Nonnull Store<EntityStore> store) {
@@ -271,23 +275,8 @@ public class WallClimbSystems {
         }
 
         private boolean isBlackListedBlock(BlockType blockType) {
-/*
-            World world = store.getExternalData().getWorld();
-            Vector3d position = transformComponent.getPosition();
-
-            int blockX = (int) Math.floor(position.x);
-            int blockY = (int) Math.floor(position.y);
-            int blockZ = (int) Math.floor(position.z);
-
-            BlockType blockType = world.getBlockType(blockX, blockY, blockZ);
-
-            if (blockType == null) {
-                return false;
-            }
- */
-
             String blockId = blockType.getId().toLowerCase();
-            return blockId != null && (blockId.contains("ladder") || blockId.contains("vine"));
+            return config.get().getBlacklistedBlocks().contains(blockId);
         }
 
         @Override

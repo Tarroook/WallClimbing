@@ -1,4 +1,4 @@
-package org.tarook.wallclimbing.commands;
+package org.tarook.wallclimbing.commands.config;
 
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;

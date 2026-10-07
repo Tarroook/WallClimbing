@@ -1,4 +1,4 @@
-package org.tarook.wallclimbing.commands;
+package org.tarook.wallclimbing.commands.config;
 
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
@@ -30,6 +30,7 @@ public class WallClimbConfigGetCommand extends CommandBase {
             case "basestaminadrainrate" -> String.valueOf(cfg.getBaseStaminaDrainRate());
             case "baseminimumstaminatoclimb" -> String.valueOf(cfg.getBaseMinimumStaminaToClimb());
             case "baseclimbspeed" -> String.valueOf(cfg.getBaseClimbSpeed());
+            case "blacklistedblocks" -> String.valueOf(cfg.getBlacklistedBlocks());
             default -> null;
         };
 

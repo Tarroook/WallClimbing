@@ -35,6 +35,7 @@ import com.hypixel.hytale.server.core.util.Config;
 import com.hypixel.hytale.server.core.util.TargetUtil;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 
+import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
@@ -143,45 +144,47 @@ public class WallClimbSystems {
             HeadRotation headRotation = archetypeChunk.getComponent(index, HeadRotation.getComponentType());
             Velocity velocityComponent = archetypeChunk.getComponent(index, Velocity.getComponentType());
             PlayerRef playerRef = archetypeChunk.getComponent(index, PlayerRef.getComponentType());
-
+            PlayerInput playerInputComponent = archetypeChunk.getComponent(index, PlayerInput.getComponentType());
             MovementStates movementStates = movementStatesComponent.getMovementStates();
 
-            // Reset stamina depletion when player touches ground
-            if (movementStates.onGround) {
-                wallClimbComponent.resetStaminaDepletion();
-            }
-
-/*
-            PlayerInput playerInputComponent = archetypeChunk.getComponent(index, PlayerInput.getComponentType());
-            List<PlayerInput.InputUpdate> queue = playerInputComponent.getMovementUpdateQueue();
-            for (PlayerInput.InputUpdate update : queue) {
-
-                WallClimbPlugin.getHytaleLogger().atInfo().log(update.toString());
-                if (update instanceof PlayerInput.WishMovement wish) {
-                    double inputX = wish.getX();  // Horizontal left/right
-                    double inputZ = wish.getZ();  // Horizontal forward/back
-                    double inputY = wish.getY();  // Vertical (jump/fly)
-
-                    WallClimbPlugin.getHytaleLogger().atInfo().log("Player Input - X: " + inputX + ", Y: " + inputY + ", Z: " + inputZ);
+            World world = store.getExternalData().getWorld();
+            world.execute(() ->{
+                // Reset stamina depletion when player touches ground
+                if (movementStates.onGround) {
+                    wallClimbComponent.resetStaminaDepletion();
                 }
-            }
-*/
-            int staminaStatIndex = DefaultEntityStatTypes.getStamina();
-            EntityStatValue staminaStat = entityStatMap.get(staminaStatIndex);
-            float currentStamina = staminaStat != null ? staminaStat.get() : 0.0f;
 
-            boolean canClimb = canPlayerClimb(wallClimbComponent, movementStates, currentStamina, playerRef, store);
 
-            if (canClimb && !wallClimbComponent.isWallClimbing()) {
-                startClimbing(wallClimbComponent, movementStates, entityStatMap, staminaStatIndex);
-            }
-            else if (!canClimb && wallClimbComponent.isWallClimbing()) {
-                stopClimbing(wallClimbComponent, movementStates, entityStatMap, staminaStatIndex);
-            }
-            else if (wallClimbComponent.isWallClimbing())
-            {
-                climb(dt, wallClimbComponent, movementStates, velocityComponent, entityStatMap, headRotation, staminaStatIndex);
-            }
+//            List<PlayerInput.InputUpdate> queue = playerInputComponent.getMovementUpdateQueue();
+//            for (PlayerInput.InputUpdate update : queue) {
+//
+//                WallClimbPlugin.getHytaleLogger().atInfo().log(update.toString());
+//                if (update instanceof PlayerInput.WishMovement wish) {
+//                    double inputX = wish.getX();  // Horizontal left/right
+//                    double inputZ = wish.getZ();  // Horizontal forward/back
+//                    double inputY = wish.getY();  // Vertical (jump/fly)
+//
+//                    WallClimbPlugin.getHytaleLogger().atInfo().log("Player Input - X: " + inputX + ", Y: " + inputY + ", Z: " + inputZ);
+//                }
+//            }
+
+                int staminaStatIndex = DefaultEntityStatTypes.getStamina();
+                EntityStatValue staminaStat = entityStatMap.get(staminaStatIndex);
+                float currentStamina = staminaStat != null ? staminaStat.get() : 0.0f;
+
+                boolean canClimb = canPlayerClimb(wallClimbComponent, movementStates, currentStamina, playerRef, store);
+
+                if (canClimb && !wallClimbComponent.isWallClimbing()) {
+                    startClimbing(wallClimbComponent, movementStates, entityStatMap, staminaStatIndex);
+                }
+                else if (!canClimb && wallClimbComponent.isWallClimbing()) {
+                    stopClimbing(wallClimbComponent, movementStates, entityStatMap, staminaStatIndex);
+                }
+                else if (wallClimbComponent.isWallClimbing())
+                {
+                    climb(dt, wallClimbComponent, movementStates, velocityComponent, entityStatMap, headRotation, staminaStatIndex);
+                }
+            });
         }
 
         private static void startClimbing(WallClimbComponent wallClimbComponent, MovementStates movementStates, EntityStatMap statMap, int staminaStatIndex) {
@@ -253,9 +256,7 @@ public class WallClimbSystems {
 
         private boolean isFacingClimbableBlock(@Nonnull Store<EntityStore> store, @Nonnull PlayerRef playerRef) {
             BlockType blockType = getFacingBlockType(store, playerRef);
-                if (blockType != null && isSolidClimbableBlock(blockType))
-                    return true;
-            return false;
+            return blockType != null && isSolidClimbableBlock(blockType);
         }
 
         private BlockType getFacingBlockType(@Nonnull Store<EntityStore> store, @Nonnull PlayerRef playerRef) {
@@ -263,13 +264,11 @@ public class WallClimbSystems {
             double checkDistance = 0.5;
 
             Vector3i targetBlockPos = TargetUtil.getTargetBlock(playerRef.getReference(), checkDistance, playerRef.getReference().getStore());
-            if(targetBlockPos != null)
-            {
-                BlockType blockType = world.getBlockType(targetBlockPos);
-                return blockType;
+            if (targetBlockPos == null) {
+                return null;
             }
 
-            return null;
+            return world.getBlockType(targetBlockPos);
         }
 
 

@@ -143,7 +143,7 @@ public class WallClimbSystems {
             HeadRotation headRotation = archetypeChunk.getComponent(index, HeadRotation.getComponentType());
             Velocity velocityComponent = archetypeChunk.getComponent(index, Velocity.getComponentType());
             PlayerRef playerRef = archetypeChunk.getComponent(index, PlayerRef.getComponentType());
-            PlayerInput playerInputComponent = archetypeChunk.getComponent(index, PlayerInput.getComponentType());
+//          PlayerInput playerInputComponent = archetypeChunk.getComponent(index, PlayerInput.getComponentType());
             MovementStates movementStates = movementStatesComponent.getMovementStates();
 
             World world = store.getExternalData().getWorld();
@@ -152,7 +152,6 @@ public class WallClimbSystems {
                 if (movementStates.onGround) {
                     wallClimbComponent.resetStaminaDepletion();
                 }
-
 
 //            List<PlayerInput.InputUpdate> queue = playerInputComponent.getMovementUpdateQueue();
 //            for (PlayerInput.InputUpdate update : queue) {

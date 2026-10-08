@@ -1,4 +1,4 @@
-package org.tarook.wallclimbing;
+package net.tarook.wallclimbing;
 
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.logger.HytaleLogger;
@@ -6,7 +6,7 @@ import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.Config;
-import org.tarook.wallclimbing.commands.WallClimbCommand;
+import net.tarook.wallclimbing.commands.WallClimbCommand;
 
 import javax.annotation.Nonnull;
 

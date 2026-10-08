@@ -1,4 +1,4 @@
-package org.tarook.wallclimbing.commands.config;
+package net.tarook.wallclimbing.commands.config;
 
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
@@ -6,36 +6,39 @@ import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredAr
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase;
 import com.hypixel.hytale.server.core.util.Config;
-import org.tarook.wallclimbing.WallClimbConfig;
+import net.tarook.wallclimbing.WallClimbConfig;
 
 import javax.annotation.Nonnull;
 
-public class WallClimbConfigGetCommand extends CommandBase {
+public class WallClimbConfigSetCommand extends CommandBase {
 
     private final Config<WallClimbConfig> config;
 
     private final RequiredArg<String> settingArg = this.withRequiredArg("setting", "Setting name", ArgTypes.STRING);
+    private final RequiredArg<Float> valueArg = this.withRequiredArg("value", "New value", ArgTypes.FLOAT);
 
-    public WallClimbConfigGetCommand(Config<WallClimbConfig> config) {
-        super("get", "Get a configuration value");
+    public WallClimbConfigSetCommand(Config<WallClimbConfig> config) {
+        super("set", "Set a configuration value");
         this.config = config;
     }
 
     @Override
     protected void executeSync(@Nonnull CommandContext context) {
         String setting = settingArg.get(context);
+        float value = valueArg.get(context);
+
         WallClimbConfig cfg = config.get();
 
-        String value = switch (setting.toLowerCase()) {
-            case "basestaminadrainrate" -> String.valueOf(cfg.getBaseStaminaDrainRate());
-            case "baseminimumstaminatoclimb" -> String.valueOf(cfg.getBaseMinimumStaminaToClimb());
-            case "baseclimbspeed" -> String.valueOf(cfg.getBaseClimbSpeed());
-            case "blacklistedblocks" -> String.valueOf(cfg.getBlacklistedBlocks());
-            default -> null;
+        boolean success = switch (setting.toLowerCase()) {
+            case "basestaminadrainrate" -> { cfg.setBaseStaminaDrainRate(value); yield true; }
+            case "baseminimumstaminatoclimb" -> { cfg.setBaseMinimumStaminaToClimb(value); yield true; }
+            case "baseclimbspeed" -> { cfg.setBaseClimbSpeed(value); yield true; }
+            default -> false;
         };
 
-        if (value != null) {
-            context.sendMessage(Message.raw(setting + " = " + value));
+        if (success) {
+            config.save();
+            context.sendMessage(Message.raw("Set " + setting + " to " + value));
         } else {
             context.sendMessage(Message.raw("Unknown setting: " + setting));
         }

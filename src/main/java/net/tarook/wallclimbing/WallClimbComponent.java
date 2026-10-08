@@ -1,4 +1,4 @@
-package org.tarook.wallclimbing;
+package net.tarook.wallclimbing;
 
 import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;

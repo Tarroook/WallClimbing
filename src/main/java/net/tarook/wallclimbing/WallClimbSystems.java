@@ -1,4 +1,4 @@
-package org.tarook.wallclimbing;
+package net.tarook.wallclimbing;
 
 import com.hypixel.hytale.component.*;
 import com.hypixel.hytale.component.dependency.Dependency;
@@ -35,7 +35,6 @@ import com.hypixel.hytale.server.core.util.Config;
 import com.hypixel.hytale.server.core.util.TargetUtil;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 
-import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 

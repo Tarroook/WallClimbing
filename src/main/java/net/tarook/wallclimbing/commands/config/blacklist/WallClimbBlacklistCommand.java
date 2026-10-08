@@ -1,8 +1,8 @@
-package org.tarook.wallclimbing.commands.config.blacklist;
+package net.tarook.wallclimbing.commands.config.blacklist;
 
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractCommandCollection;
 import com.hypixel.hytale.server.core.util.Config;
-import org.tarook.wallclimbing.WallClimbConfig;
+import net.tarook.wallclimbing.WallClimbConfig;
 
 public class WallClimbBlacklistCommand extends AbstractCommandCollection{
     public WallClimbBlacklistCommand(Config<WallClimbConfig> config) {

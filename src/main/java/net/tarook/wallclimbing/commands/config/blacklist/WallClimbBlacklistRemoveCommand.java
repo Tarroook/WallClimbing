@@ -1,4 +1,4 @@
-package org.tarook.wallclimbing.commands.config.blacklist;
+package net.tarook.wallclimbing.commands.config.blacklist;
 
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
@@ -7,7 +7,7 @@ import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase;
 import com.hypixel.hytale.server.core.util.Config;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
-import org.tarook.wallclimbing.WallClimbConfig;
+import net.tarook.wallclimbing.WallClimbConfig;
 
 public class WallClimbBlacklistRemoveCommand extends CommandBase {
     private final Config<WallClimbConfig> config;

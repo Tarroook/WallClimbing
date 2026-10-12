@@ -9,6 +9,7 @@ import com.hypixel.hytale.component.system.HolderSystem;
 import com.hypixel.hytale.component.system.RefSystem;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.server.core.modules.entitystats.StatChangeDirection;
+import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import org.joml.Vector3d;
 import com.hypixel.hytale.protocol.*;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
@@ -30,8 +31,10 @@ import com.hypixel.hytale.server.core.modules.physics.component.Velocity;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.hypixel.hytale.server.core.universe.world.chunk.section.BlockSection;
 import com.hypixel.hytale.server.core.util.Config;
 import com.hypixel.hytale.server.core.util.TargetUtil;
+import com.hypixel.hytale.math.util.ChunkUtil;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 import org.joml.Vector3i;
 
@@ -262,7 +265,7 @@ public class WallClimbSystems {
 
         @Nonnull
         private static Vector3i getClimbFaceDirection(@Nonnull TransformComponent transformComponent, @Nonnull PlayerRef playerRef, @Nonnull Store<EntityStore> store) {
-            Vector3d climbFaceNormal = getClimbFaceNormal(transformComponent, playerRef, store);
+            Vector3d climbFaceNormal = getClimbFaceNormal(transformComponent, playerRef);
             if (climbFaceNormal == null || climbFaceNormal.lengthSquared() == 0.0d) {
                 return new Vector3i(0, 0, 0);
             }
@@ -275,8 +278,8 @@ public class WallClimbSystems {
         }
 
         @Nullable
-        private static Vector3d getClimbFaceNormal(@Nonnull TransformComponent transformComponent, @Nonnull PlayerRef playerRef, @Nonnull Store<EntityStore> store) {
-            Vector3i targetBlockPos = getFacingBlockPosition(store, playerRef);
+        private static Vector3d getClimbFaceNormal(@Nonnull TransformComponent transformComponent, @Nonnull PlayerRef playerRef) {
+            Vector3i targetBlockPos = getFacingBlockPosition(playerRef);
             if (targetBlockPos == null) {
                 return null;
             }
@@ -347,7 +350,6 @@ public class WallClimbSystems {
             double absX = Math.abs(offset.x);
             double absY = Math.abs(offset.y);
             double absZ = Math.abs(offset.z);
-
             if (absX >= absY && absX >= absZ) {
                 return new Vector3d(Math.signum(offset.x) == 0.0d ? 1.0d : Math.signum(offset.x), 0.0d, 0.0d);
             }
@@ -358,7 +360,7 @@ public class WallClimbSystems {
         }
 
         @Nullable
-        private static Vector3i getFacingBlockPosition(@Nonnull Store<EntityStore> store, @Nonnull PlayerRef playerRef) {
+        private static Vector3i getFacingBlockPosition(@Nonnull PlayerRef playerRef) {
             double checkDistance = 0.5d;
             return TargetUtil.getTargetBlock(playerRef.getReference(), checkDistance, playerRef.getReference().getStore());
         }
@@ -418,13 +420,12 @@ public class WallClimbSystems {
         }
 
         private BlockType getFacingBlockType(@Nonnull Store<EntityStore> store, @Nonnull PlayerRef playerRef) {
-            Vector3i targetBlockPos = getFacingBlockPosition(store, playerRef);
+            Vector3i targetBlockPos = getFacingBlockPosition(playerRef);
             if (targetBlockPos == null) {
                 return null;
             }
 
-            World world = store.getExternalData().getWorld();
-            return world.getBlockType(targetBlockPos);
+            return getBlockTypeAt(store, targetBlockPos);
         }
 
         @Nullable
@@ -434,8 +435,30 @@ public class WallClimbSystems {
                 return null;
             }
 
+            return getBlockTypeAt(store, targetBlockPos);
+        }
+
+        @Nullable
+        private BlockType getBlockTypeAt(@Nonnull Store<EntityStore> store, @Nonnull Vector3i blockPos) {
             World world = store.getExternalData().getWorld();
-            return world.getBlockType(targetBlockPos);
+            ChunkStore chunkStore = world.getChunkStore();
+            Store<ChunkStore> chunkStoreAccessor = chunkStore.getStore();
+
+            Ref<ChunkStore> chunkSectionRef = chunkStore.getChunkSectionReferenceAtBlock(blockPos.x, blockPos.y, blockPos.z);
+            if (chunkSectionRef == null || !chunkSectionRef.isValid()) {
+                return null;
+            }
+
+            BlockSection blockSection = chunkStoreAccessor.getComponent(chunkSectionRef, BlockSection.getComponentType());
+            if (blockSection == null) {
+                return null;
+            }
+
+            int localX = blockPos.x & ChunkUtil.SIZE_MASK;
+            int localY = blockPos.y & ChunkUtil.SIZE_MASK;
+            int localZ = blockPos.z & ChunkUtil.SIZE_MASK;
+            int blockId = blockSection.get(localX, localY, localZ);
+            return BlockType.getAssetMap().getAssetOrDefault(blockId, BlockType.UNKNOWN);
         }
 
         @Nullable

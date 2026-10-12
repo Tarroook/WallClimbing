@@ -4,6 +4,7 @@ import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.Ref;
 import org.joml.Vector3d;
+import org.joml.Vector3i;
 import com.hypixel.hytale.protocol.Position;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
@@ -19,6 +20,8 @@ public class WallClimbComponent implements Component<EntityStore> {
     private float staminaDrainRateMultiplier = 1.0f;
     private float climbSpeedMultiplier = 1.0f;
     private Vector3d inputDirection = new Vector3d(0,0,0);
+    private Vector3i climbingFaceDirection = new Vector3i(0,0,0);
+    private float climbStillSpeedModifier = 1f;
 
     @Nullable
     private Ref<EntityStore> entity;
@@ -36,6 +39,7 @@ public class WallClimbComponent implements Component<EntityStore> {
         staminaDrainRateMultiplier = other.staminaDrainRateMultiplier;
         climbSpeedMultiplier = other.climbSpeedMultiplier;
         inputDirection = new Vector3d(other.inputDirection);
+        climbingFaceDirection = new Vector3i(other.climbingFaceDirection);
         entity = other.entity;
     }
 
@@ -85,6 +89,27 @@ public class WallClimbComponent implements Component<EntityStore> {
 
     public Vector3d getInputDirection() {
         return this.inputDirection;
+    }
+
+    public void setClimbingFaceDirection(@Nonnull Vector3i direction) {
+        climbingFaceDirection = new Vector3i(direction);
+    }
+
+    @Nonnull
+    public Vector3i getClimbingFaceDirection() {
+        return new Vector3i(climbingFaceDirection);
+    }
+
+    public void clearClimbingFaceDirection() {
+        climbingFaceDirection.set(0, 0, 0);
+    }
+
+    public float getClimbStillSpeedModifier() {
+        return climbStillSpeedModifier;
+    }
+
+    public void setClimbStillSpeedModifier(float climbStillSpeedModifier) {
+        this.climbStillSpeedModifier = climbStillSpeedModifier;
     }
 
     @Nonnull

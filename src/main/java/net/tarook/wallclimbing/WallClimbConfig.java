@@ -24,9 +24,9 @@ public class WallClimbConfig {
                     (config) -> config.blacklistedBlocks.toArray(new String[0])).add()
             .build();
 
-    private float baseStaminaDrainRate = 10.0f;
+    private float baseStaminaDrainRate = 5.0f;
     private float baseMinimumStaminaToClimb = 1.0f;
-    private float baseClimbSpeed = 5.0f;
+    private float baseClimbSpeed = 2.0f;
     private HashSet<String> blacklistedBlocks = new HashSet<>(Arrays.asList(
             "Furniture_Village_Ladder",
             "Furniture_Ancient_Ladder",

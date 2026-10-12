@@ -33,7 +33,7 @@ public class WallClimbConfig {
                     (config) -> config.blacklistedBlocks.toArray(new String[0])).add()
             .build();
 
-    private float baseStaminaDrainRate = 5.0f;
+    private float baseStaminaDrainRate = 4.0f;
     private float baseMinimumStaminaToClimb = 1.0f;
     private float baseClimbSpeed = 2.0f;
     private float baseClimbStillSpeedMultiplier = .1f;

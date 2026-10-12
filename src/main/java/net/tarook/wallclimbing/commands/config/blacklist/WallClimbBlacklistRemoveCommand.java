@@ -26,7 +26,7 @@ public class WallClimbBlacklistRemoveCommand extends CommandBase {
         WallClimbConfig cfg = config.get();
 
         if (cfg.getBlacklistedBlocks().contains(blockID)) {
-            cfg.getBlacklistedBlocks().remove(blockID);
+            cfg.removeBlacklistedBlock(blockID);
             config.save();
             commandContext.sendMessage(Message.raw("Removed block " + blockID + " from the wall climbing blacklist."));
         } else {

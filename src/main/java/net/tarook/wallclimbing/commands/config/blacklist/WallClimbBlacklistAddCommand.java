@@ -31,7 +31,7 @@ public class WallClimbBlacklistAddCommand extends CommandBase {
             return;
         }
 
-        cfg.getBlacklistedBlocks().add(blockID);
+        cfg.addBlacklistedBlock(blockID);
         config.save();
         commandContext.sendMessage(Message.raw("Added block " + blockID + " to the wall climbing blacklist."));
     }

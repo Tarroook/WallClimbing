@@ -41,11 +41,6 @@ import javax.annotation.Nullable;
 
 public class WallClimbSystems {
 
-    private static final double CLIMB_DIRECTION_DEADZONE = 0.2d;
-    private static final double CLIMB_STILL_THRESHOLD = 0.95d;
-    private static final double CLIMB_DETACH_LOOK_THRESHOLD = 0.5d;
-    private static final float CLIMB_STILL_STAMINA_MULTIPLIER = 0.1f;
-
     public WallClimbSystems() {
     }
 
@@ -215,7 +210,7 @@ public class WallClimbSystems {
             Vector3d force = isStill ? new Vector3d(0.0d, 0.0d, 0.0d) : climbDirection.mul(speed);
             velocityComponent.addInstruction(force, null, ChangeVelocityType.Set);
 
-            float staminaMultiplier = isStill ? CLIMB_STILL_STAMINA_MULTIPLIER : 1.0f;
+            float staminaMultiplier = isStill ? wallClimbComponent.getClimbStillSpeedModifier() * config.get().getBaseClimbStillSpeedMultiplier() : 1.0f;
             float staminaToDrain = config.get().getBaseStaminaDrainRate() * wallClimbComponent.getStaminaDrainRateMultiplier() * staminaMultiplier * dt;
             entityStatMap.addStatValue(staminaStatIndex, -staminaToDrain);
 
@@ -243,17 +238,13 @@ public class WallClimbSystems {
             wallNormal.normalize();
 
             Vector3d normalizedLook = lookDirection.normalize();
-            if (normalizedLook.dot(wallNormal) >= CLIMB_STILL_THRESHOLD) {
+            if (normalizedLook.dot(wallNormal) >= config.get().getClimbStillThreshold()) {
                 return new Vector3d(0.0d, 0.0d, 0.0d);
             }
 
             Vector3d projectedLook = projectOntoPlane(normalizedLook, wallNormal);
-            if (projectedLook.lengthSquared() < CLIMB_DIRECTION_DEADZONE * CLIMB_DIRECTION_DEADZONE) {
-                projectedLook = projectOntoPlane(new Vector3d(0.0d, 1.0d, 0.0d), wallNormal);
-            }
-
             if (projectedLook.lengthSquared() == 0.0d) {
-                return new Vector3d(0.0d, 1.0d, 0.0d);
+                return new Vector3d(0.0d, 0.0d, 0.0d);
             }
 
             return projectedLook.normalize();
@@ -474,7 +465,7 @@ public class WallClimbSystems {
 
             Vector3d climbFaceVector = new Vector3d(climbFaceDirection.x, climbFaceDirection.y, climbFaceDirection.z).normalize();
             double alignment = lookDirection.normalize().dot(climbFaceVector);
-            return alignment >= CLIMB_DETACH_LOOK_THRESHOLD;
+            return alignment >= config.get().getClimbDetachLookThreshold();
         }
 
 

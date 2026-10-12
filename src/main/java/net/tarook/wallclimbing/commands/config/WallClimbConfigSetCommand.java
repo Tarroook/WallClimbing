@@ -33,6 +33,9 @@ public class WallClimbConfigSetCommand extends CommandBase {
             case "basestaminadrainrate" -> { cfg.setBaseStaminaDrainRate(value); yield true; }
             case "baseminimumstaminatoclimb" -> { cfg.setBaseMinimumStaminaToClimb(value); yield true; }
             case "baseclimbspeed" -> { cfg.setBaseClimbSpeed(value); yield true; }
+            case "baseclimbstillspeedmultiplier" -> { cfg.setBaseClimbStillSpeedMultiplier(value); yield true; }
+            case "climbdetachlookthreshold" -> { cfg.setClimbDetachLookThreshold(value); yield true; }
+            case "climbstillthreshold" -> { cfg.setClimbStillThreshold(value); yield true; }
             default -> false;
         };
 

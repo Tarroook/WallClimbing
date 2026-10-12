@@ -29,6 +29,12 @@ public class WallClimbConfigListCommand extends CommandBase {
                 .insert("\n")
                 .insert("BaseClimbSpeed: " + cfg.getBaseClimbSpeed())
                 .insert("\n")
+                .insert("BaseClimbStillSpeedMultiplier: " + cfg.getBaseClimbStillSpeedMultiplier())
+                .insert("\n")
+                .insert("ClimbDetachLookThreshold: " + cfg.getClimbDetachLookThreshold())
+                .insert("\n")
+                .insert("ClimbStillThreshold: " + cfg.getClimbStillThreshold())
+                .insert("\n")
                 .insert("blacklistedBlocks: " + cfg.getBlacklistedBlocks());
 
         context.sendMessage(message);

@@ -19,6 +19,15 @@ public class WallClimbConfig {
             .append(new KeyedCodec<Float>("BaseClimbSpeed", Codec.FLOAT),
                     (config, value) -> config.baseClimbSpeed = value,
                     (config) -> config.baseClimbSpeed).add()
+            .append(new KeyedCodec<Float>("BaseClimbStillSpeedMultiplier", Codec.FLOAT),
+                    (config, value) -> config.baseClimbStillSpeedMultiplier = value,
+                    (config) -> config.baseClimbStillSpeedMultiplier).add()
+            .append(new KeyedCodec<Double>("ClimbDetachLookThreshold", Codec.DOUBLE),
+                    (config, value) -> config.climbDetachLookThreshold = value,
+                    (config) -> config.climbDetachLookThreshold).add()
+            .append(new KeyedCodec<Double>("ClimbStillThreshold", Codec.DOUBLE),
+                    (config, value) -> config.climbStillThreshold = value,
+                    (config) -> config.climbStillThreshold).add()
             .append(new KeyedCodec<String[]>("BlacklistedBlocks", Codec.STRING_ARRAY),
                     (config, value) -> config.blacklistedBlocks = new HashSet<>(Arrays.asList(value)),
                     (config) -> config.blacklistedBlocks.toArray(new String[0])).add()
@@ -27,6 +36,9 @@ public class WallClimbConfig {
     private float baseStaminaDrainRate = 5.0f;
     private float baseMinimumStaminaToClimb = 1.0f;
     private float baseClimbSpeed = 2.0f;
+    private float baseClimbStillSpeedMultiplier = .1f;
+    private double climbDetachLookThreshold = 0.d;
+    private double climbStillThreshold = 0.7d;
     private HashSet<String> blacklistedBlocks = new HashSet<>(Arrays.asList(
             "Furniture_Village_Ladder",
             "Furniture_Ancient_Ladder",
@@ -61,6 +73,18 @@ public class WallClimbConfig {
         return baseClimbSpeed;
     }
 
+    public float getBaseClimbStillSpeedMultiplier() {
+        return baseClimbStillSpeedMultiplier;
+    }
+
+    public double getClimbDetachLookThreshold() {
+        return climbDetachLookThreshold;
+    }
+
+    public double getClimbStillThreshold() {
+        return climbStillThreshold;
+    }
+
     public HashSet<String> getBlacklistedBlocks() { return blacklistedBlocks; }
 
     public void setBaseStaminaDrainRate(float baseStaminaDrainRate) {
@@ -73,6 +97,18 @@ public class WallClimbConfig {
 
     public void setBaseClimbSpeed(float baseClimbSpeed) {
         this.baseClimbSpeed = baseClimbSpeed;
+    }
+
+    public void setBaseClimbStillSpeedMultiplier(float baseClimbStillSpeedMultiplier) {
+        this.baseClimbStillSpeedMultiplier = baseClimbStillSpeedMultiplier;
+    }
+
+    public void setClimbDetachLookThreshold(double climbDetachLookThreshold) {
+        this.climbDetachLookThreshold = climbDetachLookThreshold;
+    }
+
+    public void setClimbStillThreshold(double climbStillThreshold) {
+        this.climbStillThreshold = climbStillThreshold;
     }
 
     public void addBlacklistedBlock(String blockName) {

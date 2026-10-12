@@ -30,6 +30,9 @@ public class WallClimbConfigGetCommand extends CommandBase {
             case "basestaminadrainrate" -> String.valueOf(cfg.getBaseStaminaDrainRate());
             case "baseminimumstaminatoclimb" -> String.valueOf(cfg.getBaseMinimumStaminaToClimb());
             case "baseclimbspeed" -> String.valueOf(cfg.getBaseClimbSpeed());
+            case "baseclimbstillspeedmultiplier" -> String.valueOf(cfg.getBaseClimbStillSpeedMultiplier());
+            case "climbdetachlookthreshold" -> String.valueOf(cfg.getClimbDetachLookThreshold());
+            case "climbstillthreshold" -> String.valueOf(cfg.getClimbStillThreshold());
             case "blacklistedblocks" -> String.valueOf(cfg.getBlacklistedBlocks());
             default -> null;
         };

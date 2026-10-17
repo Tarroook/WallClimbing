@@ -210,7 +210,7 @@ public class WallClimbSystems {
         private void climb(float dt, WallClimbComponent wallClimbComponent, MovementStates movementStates, Velocity velocityComponent, EntityStatMap entityStatMap, HeadRotation headRotation, int staminaStatIndex) {
             EntityStatValue staminaStat = entityStatMap.get(staminaStatIndex);
             float speed = config.get().getBaseClimbSpeed() * wallClimbComponent.getClimbSpeedMultiplier();
-            speed = getValueBasedOnStamina(Easing.CUBIC_IN, 0.2f, speed, staminaStat.get(), staminaStat.getMax(), 0.5f);
+            speed = getValueBasedOnStamina(Easing.CUBIC_IN, config.get().getSlowDownThresholdPercentage(), speed, staminaStat.get(), staminaStat.getMax(), config.get().getMinClimbSpeed());
             Vector3d climbDirection = getClimbDirection(wallClimbComponent, headRotation);
             boolean isStill = climbDirection.lengthSquared() == 0.0d;
             Vector3d force = isStill ? new Vector3d(0.0d, 0.0d, 0.0d) : climbDirection.mul(speed);
@@ -218,7 +218,7 @@ public class WallClimbSystems {
 
             float staminaMultiplier = isStill ? wallClimbComponent.getClimbStillSpeedModifier() * config.get().getBaseClimbStillSpeedMultiplier() : 1.0f;
             float staminaToDrain = config.get().getBaseStaminaDrainRate() * wallClimbComponent.getStaminaDrainRateMultiplier() * staminaMultiplier * dt;
-            staminaToDrain = getValueBasedOnStamina(Easing.CUBIC_IN, 0.2f, staminaToDrain, staminaStat.get(), staminaStat.getMax(), 0.01f);
+            staminaToDrain = getValueBasedOnStamina(Easing.CUBIC_IN, config.get().getSlowDownThresholdPercentage(), staminaToDrain, staminaStat.get(), staminaStat.getMax(), config.get().getMinDrainRate());
             entityStatMap.addStatValue(staminaStatIndex, -staminaToDrain);
 
             float currentStamina = staminaStat != null ? staminaStat.get() : 0.0f;
@@ -517,7 +517,6 @@ public class WallClimbSystems {
 
             double remappedInput = staminaFraction / thresholdPercentage;
 
-            // Evaluate your existing curve on the remapped input
             double speedMultiplier = easingCurve.apply(remappedInput);
 
             return Math.max(minValue, (float) (value * speedMultiplier));

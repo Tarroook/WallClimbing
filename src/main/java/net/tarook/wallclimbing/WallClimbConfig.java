@@ -28,6 +28,18 @@ public class WallClimbConfig {
             .append(new KeyedCodec<Double>("ClimbStillThreshold", Codec.DOUBLE),
                     (config, value) -> config.climbStillThreshold = value,
                     (config) -> config.climbStillThreshold).add()
+            .append(new KeyedCodec<Double>("MinVerticalSpeedToClimb", Codec.DOUBLE),
+                    (config, value) -> config.minVerticalSpeedToClimb = value,
+                    (config) -> config.minVerticalSpeedToClimb).add()
+            .append(new KeyedCodec<Float>("SlowDownThresholdPercentage", Codec.FLOAT),
+                    (config, value) -> config.slowDownThresholdPercentage = value,
+                    (config) -> config.slowDownThresholdPercentage).add()
+            .append(new KeyedCodec<Float>("MinClimbSpeed", Codec.FLOAT),
+                    (config, value) -> config.minClimbSpeed = value,
+                    (config) -> config.minClimbSpeed).add()
+            .append(new KeyedCodec<Float>("MinDrainRate", Codec.FLOAT),
+                    (config, value) -> config.minDrainRate = value,
+                    (config) -> config.minDrainRate).add()
             .append(new KeyedCodec<String[]>("BlacklistedBlocks", Codec.STRING_ARRAY),
                     (config, value) -> config.blacklistedBlocks = new HashSet<>(Arrays.asList(value)),
                     (config) -> config.blacklistedBlocks.toArray(new String[0])).add()
@@ -39,6 +51,10 @@ public class WallClimbConfig {
     private float baseClimbStillSpeedMultiplier = .1f;
     private double climbDetachLookThreshold = 0.d;
     private double climbStillThreshold = 0.7d;
+    private double minVerticalSpeedToClimb = -30.d;
+    private float slowDownThresholdPercentage = 0.2f;
+    private float minClimbSpeed = 0.5f;
+    private float minDrainRate = 0.01f;
     private HashSet<String> blacklistedBlocks = new HashSet<>(Arrays.asList(
             "Furniture_Village_Ladder",
             "Furniture_Ancient_Ladder",
@@ -105,6 +121,38 @@ public class WallClimbConfig {
 
     public void setClimbDetachLookThreshold(double climbDetachLookThreshold) {
         this.climbDetachLookThreshold = climbDetachLookThreshold;
+    }
+
+    public double getMinVerticalSpeedToClimb() {
+        return minVerticalSpeedToClimb;
+    }
+
+    public void setMinVerticalSpeedToClimb(double minVerticalSpeedToClimb) {
+        this.minVerticalSpeedToClimb = minVerticalSpeedToClimb;
+    }
+
+    public float getSlowDownThresholdPercentage() {
+        return slowDownThresholdPercentage;
+    }
+
+    public void setSlowDownThresholdPercentage(float slowDownThresholdPercentage) {
+        this.slowDownThresholdPercentage = slowDownThresholdPercentage;
+    }
+
+    public float getMinClimbSpeed() {
+        return minClimbSpeed;
+    }
+
+    public void setMinClimbSpeed(float minClimbSpeed) {
+        this.minClimbSpeed = minClimbSpeed;
+    }
+
+    public float getMinDrainRate() {
+        return minDrainRate;
+    }
+
+    public void setMinDrainRate(float minDrainRate) {
+        this.minDrainRate = minDrainRate;
     }
 
     public void setClimbStillThreshold(double climbStillThreshold) {

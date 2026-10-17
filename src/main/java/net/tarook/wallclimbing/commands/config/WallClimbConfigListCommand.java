@@ -35,6 +35,14 @@ public class WallClimbConfigListCommand extends CommandBase {
                 .insert("\n")
                 .insert("ClimbStillThreshold: " + cfg.getClimbStillThreshold())
                 .insert("\n")
+                .insert("MinVerticalSpeedToClimb: " + cfg.getMinVerticalSpeedToClimb())
+                .insert("\n")
+                .insert("SlowDownThresholdPercentage: " + cfg.getSlowDownThresholdPercentage())
+                .insert("\n")
+                .insert("MinClimbSpeed: " + cfg.getMinClimbSpeed())
+                .insert("\n")
+                .insert("MinDrainRate: " + cfg.getMinDrainRate())
+                .insert("\n")
                 .insert("blacklistedBlocks: " + cfg.getBlacklistedBlocks());
 
         context.sendMessage(message);

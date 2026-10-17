@@ -10,6 +10,7 @@ import com.hypixel.hytale.component.system.RefSystem;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.server.core.modules.entitystats.StatChangeDirection;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
+import net.tarook.utils.Easing;
 import org.joml.Vector3d;
 import com.hypixel.hytale.protocol.*;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
@@ -174,7 +175,7 @@ public class WallClimbSystems {
                 EntityStatValue staminaStat = entityStatMap.get(staminaStatIndex);
                 float currentStamina = staminaStat != null ? staminaStat.get() : 0.0f;
 
-                boolean canClimb = canPlayerClimb(wallClimbComponent, movementStates, currentStamina, headRotation, transformComponent, playerRef, store);
+                boolean canClimb = canPlayerClimb(wallClimbComponent, movementStates, currentStamina, headRotation, transformComponent, playerRef, store, velocityComponent);
 
                 if (canClimb && !wallClimbComponent.isWallClimbing()) {
                     startClimbing(wallClimbComponent, movementStates, entityStatMap, transformComponent, playerRef, store, staminaStatIndex);
@@ -207,7 +208,9 @@ public class WallClimbSystems {
         }
 
         private void climb(float dt, WallClimbComponent wallClimbComponent, MovementStates movementStates, Velocity velocityComponent, EntityStatMap entityStatMap, HeadRotation headRotation, int staminaStatIndex) {
+            EntityStatValue staminaStat = entityStatMap.get(staminaStatIndex);
             float speed = config.get().getBaseClimbSpeed() * wallClimbComponent.getClimbSpeedMultiplier();
+            speed = getValueBasedOnStamina(Easing.CUBIC_IN, 0.2f, speed, staminaStat.get(), staminaStat.getMax(), 0.5f);
             Vector3d climbDirection = getClimbDirection(wallClimbComponent, headRotation);
             boolean isStill = climbDirection.lengthSquared() == 0.0d;
             Vector3d force = isStill ? new Vector3d(0.0d, 0.0d, 0.0d) : climbDirection.mul(speed);
@@ -215,9 +218,9 @@ public class WallClimbSystems {
 
             float staminaMultiplier = isStill ? wallClimbComponent.getClimbStillSpeedModifier() * config.get().getBaseClimbStillSpeedMultiplier() : 1.0f;
             float staminaToDrain = config.get().getBaseStaminaDrainRate() * wallClimbComponent.getStaminaDrainRateMultiplier() * staminaMultiplier * dt;
+            staminaToDrain = getValueBasedOnStamina(Easing.CUBIC_IN, 0.2f, staminaToDrain, staminaStat.get(), staminaStat.getMax(), 0.01f);
             entityStatMap.addStatValue(staminaStatIndex, -staminaToDrain);
 
-            EntityStatValue staminaStat = entityStatMap.get(staminaStatIndex);
             float currentStamina = staminaStat != null ? staminaStat.get() : 0.0f;
 
             if (currentStamina <= 0.0f) {
@@ -365,7 +368,7 @@ public class WallClimbSystems {
             return TargetUtil.getTargetBlock(playerRef.getReference(), checkDistance, playerRef.getReference().getStore());
         }
 
-        private boolean canPlayerClimb(@Nonnull WallClimbComponent wallClimbComponent, @Nonnull MovementStates movementStates, float currentStamina, @Nonnull HeadRotation headRotation, @Nonnull TransformComponent transformComponent, @Nonnull PlayerRef playerRef, @Nonnull Store<EntityStore> store) {
+        private boolean canPlayerClimb(@Nonnull WallClimbComponent wallClimbComponent, @Nonnull MovementStates movementStates, float currentStamina, @Nonnull HeadRotation headRotation, @Nonnull TransformComponent transformComponent, @Nonnull PlayerRef playerRef, @Nonnull Store<EntityStore> store, Velocity velocityComponent) {
 
             if (movementStates.onGround) {
                 return false;
@@ -395,6 +398,10 @@ public class WallClimbSystems {
             }
 
             if (movementStates.flying || movementStates.gliding) {
+                return false;
+            }
+
+            if (velocityComponent.getVelocity().y < -30.d) {
                 return false;
             }
 
@@ -499,6 +506,21 @@ public class WallClimbSystems {
         private boolean isBlackListedBlock(@Nonnull BlockType blockType) {
             String blockId = blockType.getId();
             return config.get().getBlacklistedBlocks().contains(blockId);
+        }
+
+        public float getValueBasedOnStamina(Easing easingCurve, float thresholdPercentage, float value, float currentStamina, float maxStamina, float minValue) {
+            float staminaFraction = Math.max(0.0f, Math.min(1.0f, currentStamina / maxStamina));
+
+            if (staminaFraction > thresholdPercentage) {
+                return value;
+            }
+
+            double remappedInput = staminaFraction / thresholdPercentage;
+
+            // Evaluate your existing curve on the remapped input
+            double speedMultiplier = easingCurve.apply(remappedInput);
+
+            return Math.max(minValue, (float) (value * speedMultiplier));
         }
 
         @Override

@@ -151,6 +151,7 @@ public class WallClimbSystems {
             PlayerRef playerRef = archetypeChunk.getComponent(index, PlayerRef.getComponentType());
 //          PlayerInput playerInputComponent = archetypeChunk.getComponent(index, PlayerInput.getComponentType());
             MovementStates movementStates = movementStatesComponent.getMovementStates();
+            Player player = archetypeChunk.getComponent(index, Player.getComponentType());
 
             store.getExternalData().getWorld().execute(() ->{
                 // Reset stamina depletion when player touches ground
@@ -171,11 +172,12 @@ public class WallClimbSystems {
 //                }
 //            }
 
+                GameMode gamemode = player.getGameMode();
                 int staminaStatIndex = DefaultEntityStatTypes.getStamina();
                 EntityStatValue staminaStat = entityStatMap.get(staminaStatIndex);
                 float currentStamina = staminaStat != null ? staminaStat.get() : 0.0f;
 
-                boolean canClimb = canPlayerClimb(wallClimbComponent, movementStates, currentStamina, headRotation, transformComponent, playerRef, store, velocityComponent);
+                boolean canClimb = canPlayerClimb(wallClimbComponent, movementStates, currentStamina, headRotation, transformComponent, playerRef, store, velocityComponent, gamemode);
 
                 if (canClimb && !wallClimbComponent.isWallClimbing()) {
                     startClimbing(wallClimbComponent, movementStates, entityStatMap, transformComponent, playerRef, store, staminaStatIndex);
@@ -185,7 +187,7 @@ public class WallClimbSystems {
                 }
                 else if (wallClimbComponent.isWallClimbing())
                 {
-                    climb(dt, wallClimbComponent, movementStates, velocityComponent, entityStatMap, headRotation, staminaStatIndex);
+                    climb(dt, wallClimbComponent, movementStates, velocityComponent, entityStatMap, headRotation, staminaStatIndex, gamemode);
                 }
             });
         }
@@ -207,7 +209,7 @@ public class WallClimbSystems {
             statMap.setStatChangeSuppressed(staminaStatIndex, StatChangeDirection.RAISE, false);
         }
 
-        private void climb(float dt, WallClimbComponent wallClimbComponent, MovementStates movementStates, Velocity velocityComponent, EntityStatMap entityStatMap, HeadRotation headRotation, int staminaStatIndex) {
+        private void climb(float dt, WallClimbComponent wallClimbComponent, MovementStates movementStates, Velocity velocityComponent, EntityStatMap entityStatMap, HeadRotation headRotation, int staminaStatIndex, GameMode gamemode) {
             EntityStatValue staminaStat = entityStatMap.get(staminaStatIndex);
             float speed = config.get().getBaseClimbSpeed() * wallClimbComponent.getClimbSpeedMultiplier();
             speed = getValueBasedOnStamina(Easing.CUBIC_IN, config.get().getSlowDownThresholdPercentage(), speed, staminaStat.get(), staminaStat.getMax(), config.get().getMinClimbSpeed());
@@ -216,6 +218,9 @@ public class WallClimbSystems {
             Vector3d force = isStill ? new Vector3d(0.0d, 0.0d, 0.0d) : climbDirection.mul(speed);
             velocityComponent.addInstruction(force, null, ChangeVelocityType.Set);
 
+            if(gamemode == GameMode.Creative){
+                return;
+            }
             float staminaMultiplier = isStill ? wallClimbComponent.getClimbStillSpeedModifier() * config.get().getBaseClimbStillSpeedMultiplier() : 1.0f;
             float staminaToDrain = config.get().getBaseStaminaDrainRate() * wallClimbComponent.getStaminaDrainRateMultiplier() * staminaMultiplier * dt;
             staminaToDrain = getValueBasedOnStamina(Easing.CUBIC_IN, config.get().getSlowDownThresholdPercentage(), staminaToDrain, staminaStat.get(), staminaStat.getMax(), config.get().getMinDrainRate());
@@ -368,7 +373,7 @@ public class WallClimbSystems {
             return TargetUtil.getTargetBlock(playerRef.getReference(), checkDistance, playerRef.getReference().getStore());
         }
 
-        private boolean canPlayerClimb(@Nonnull WallClimbComponent wallClimbComponent, @Nonnull MovementStates movementStates, float currentStamina, @Nonnull HeadRotation headRotation, @Nonnull TransformComponent transformComponent, @Nonnull PlayerRef playerRef, @Nonnull Store<EntityStore> store, Velocity velocityComponent) {
+        private boolean canPlayerClimb(@Nonnull WallClimbComponent wallClimbComponent, @Nonnull MovementStates movementStates, float currentStamina, @Nonnull HeadRotation headRotation, @Nonnull TransformComponent transformComponent, @Nonnull PlayerRef playerRef, @Nonnull Store<EntityStore> store, Velocity velocityComponent, GameMode gamemode) {
 
             if (movementStates.onGround) {
                 return false;
@@ -378,19 +383,21 @@ public class WallClimbSystems {
                 return false;
             }
 
-            if(wallClimbComponent.isWallClimbing()){
-                if(currentStamina <= 0.0f) {
-                    return false;
+            if(gamemode == GameMode.Adventure){
+                if(wallClimbComponent.isWallClimbing()){
+                    if(currentStamina <= 0.0f) {
+                        return false;
+                    }
                 }
-            }
-            else{
-                if (currentStamina < config.get().getBaseMinimumStaminaToClimb()) {
-                    return false;
+                else{
+                    if (currentStamina < config.get().getBaseMinimumStaminaToClimb()) {
+                        return false;
+                    }
                 }
-            }
 
-            if (wallClimbComponent.isStaminaDepleted()) {
-                return false;
+                if (wallClimbComponent.isStaminaDepleted()) {
+                    return false;
+                }
             }
 
             if (movementStates.inFluid || movementStates.swimming) {
